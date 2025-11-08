@@ -1,2 +1,2 @@
 # BatchMenu
-A simple batch script tool with a user interface to select 
+A simple batch script tool with a numbered menu as user interface to select between several useful commands.
