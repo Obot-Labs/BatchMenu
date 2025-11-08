@@ -1,6 +1,7 @@
 @ECHO off
 
-:: SETlocal enabledelayedexpansion 
+:: Save original working directory (to restore later)
+SET "originalWorkDir=%cd%"
 
 :: Check for Administrator
 SET "isAdmin=0"
@@ -20,8 +21,8 @@ ECHO ===========================================================================
 ECHO.
 ECHO  Please select an option:
 ECHO.
-ECHO   1. Clear Cache and Delete folders
-ECHO   2. Git reset
+ECHO   1. Quick Clear
+ECHO   2. Git
 ECHO   3. Windows Firewall
 ECHO   4. Option 4 - [Placeholder]
 ECHO   5. Option 5 - [Placeholder]
@@ -38,6 +39,7 @@ IF "%isAdmin%"=="1" (
     ECHO  Not running as Administrator.
 )
 ECHO.
+SET "choice="
 SET /p choice=Enter your choice (1-9 or x): 
 
 :: Handle input
@@ -62,12 +64,12 @@ GOTO main_menu
 
 
 :: ================================================================================================
-:: main_option1 - Clear Cache and Delete folders
+:: main_option1 - Quick Clear
 :: ================================================================================================
 :main_option1
 CLS
 ECHO ===========================================================================================
-ECHO                              Clear Cache and Delete folders
+ECHO                                      Quick Clear
 ECHO ===========================================================================================
 ECHO  Clear cache or delete folders recursively. This actions cannot be undone.
 ECHO.
@@ -79,15 +81,17 @@ ECHO   2. Delete packages
 ECHO   3. Delete node_modules
 ECHO   4. Delete .vs
 ECHO   5. Delete .git
+ECHO   6. Delete custom folder
 ECHO.
 ECHO   -- Clear cache
-ECHO   6. Clear NuGet cache
-ECHO   7. Clear npm cache
+ECHO   7. Clear NuGet cache
+ECHO   8. Clear npm cache
 ECHO.
 ECHO   z. Back to main menu
 ECHO   x. Exit
 ECHO.
-SET /p choice=Enter your choice (1-7, z, or x): 
+SET "choice="
+SET /p choice=Enter your choice (1-8, z, or x): 
 
 :: Handle input
 IF "%choice%"=="1" GOTO clear_option1
@@ -97,6 +101,7 @@ IF "%choice%"=="4" GOTO clear_option4
 IF "%choice%"=="5" GOTO clear_option5
 IF "%choice%"=="6" GOTO clear_option6
 IF "%choice%"=="7" GOTO clear_option7
+IF "%choice%"=="8" GOTO clear_option8
 IF /i "%choice%"=="z" GOTO main_menu
 IF /i "%choice%"=="x" GOTO exit
 
@@ -199,9 +204,56 @@ IF /i "%confirm%"=="y" (
 )
 
 :: ========================================================================
-:: clear_option6: Clear NuGet cache
+:: clear_option6: Delete custom folder
 :: ========================================================================
 :clear_option6
+CLS
+ECHO Delete a custom folder recursively.
+ECHO Press 'z' to cancel and go back to main menu.
+ECHO Wildcard '*' not allowed.
+ECHO.
+SET /p customFolderToClear=Enter the folder name to delete (e.g. dist, build, temp): 
+
+:: Check if empty
+IF "%customFolderToClear%"=="" (
+    ECHO No folder name entered. Please try again.
+    PAUSE
+    GOTO clear_option6
+)
+:: Check if cancel
+IF /I "%customFolderToClear%"=="z" (
+    ECHO Canceling...
+    PAUSE
+    GOTO main_option1
+)
+:: Check for dangerous wildcard '*'
+ECHO.%customFolderToClear% | FINDSTR "\*" >nul
+IF %ERRORLEVEL%==0 (
+	ECHO.
+    ECHO ERROR: Wildcards * are not allowed. Please enter an exact folder name.
+    PAUSE
+    GOTO clear_option6
+)
+
+ECHO.
+ECHO Cleaning "%customFolderToClear%" folders recursively...
+FOR /d /r "%~dp0" %%d IN (%customFolderToClear%) DO (
+    IF EXIST "%%d" (
+        ECHO Deleting %%d
+        RD /s /q "%%d"
+    )
+)
+
+ECHO.
+ECHO Done!
+PAUSE
+GOTO main_option1
+
+
+:: ========================================================================
+:: clear_option7: Clear NuGet cache
+:: ========================================================================
+:clear_option7
 CLS
 ECHO Cleaning NuGet cache...
 nuget locals all -clear
@@ -215,9 +267,9 @@ PAUSE
 GOTO main_option1
 
 :: ========================================================================
-:: clear_option7: Clear npm cache
+:: clear_option8: Clear npm cache
 :: ========================================================================
-:clear_option7
+:clear_option8
 CLS
 ECHO Cleaning npm cache...
 npm cache clean --FORce
@@ -237,52 +289,141 @@ GOTO main_option1
 
 
 
-:: ================================================================================================
-:: main_option2 - Git reset
-:: ================================================================================================
+
+
+
+
+
+
+:: ========================================================================================================================
+:: main_option2 - Git
+:: ========================================================================================================================
 :main_option2
+SETLOCAL enabledelayedexpansion
+
 CLS
 ECHO ===========================================================================================
-ECHO                                     Git Reset
+ECHO                                           Git
 ECHO ===========================================================================================
-ECHO  Remove changes and checkout to develop. This actions cannot be undone.
 ECHO.
-ECHO  Please select an option: 
-ECHO.
-ECHO   1. Restore tracked files               (git checkout .)
-ECHO   2. Remove untracked files and dirs.    (git clean -fd)
-ECHO   3. Remove everything untracked.        (git clean -fdx)
-ECHO   4. Prune branches                      (git fetch --prune)
-ECHO   5. Checkout to develop                 (git checkout develop)
-ECHO   6. Pull                                (git pull)
-ECHO.
-ECHO   7. Restore (1, 2, 5, 6, 4)
-ECHO.
+
+:: First check if the current folder is itself a repository
+IF EXIST "%~dp0\.git" (
+    SET "selectedRepo=%~dp0"
+    CLS
+    ECHO WARNING: This batch tool is running directly inside a Git repository:
+    ECHO   !selectedRepo!
+    ECHO. 
+    ECHO Some Git commands will be unavailable.
+    ECHO. 
+    PAUSE
+    GOTO main_option2_menu
+)
+
+:: If not, search for repositories in subfolders recursively
+ECHO Scanning for Git repositories...
+SET gitRepoCount=0
+FOR /r "%~dp0" %%d IN (.) DO (
+    IF EXIST "%%d\.git" (
+        SET /a gitRepoCount+=1
+        SET "repo!gitRepoCount!=%%~fd"
+    )
+)
+:: If no repositories are found
+IF %gitRepoCount%==0 (
+    ECHO. 
+    ECHO No Git repositories found in this folder or its subfolders.
+    ECHO. 
+    PAUSE
+    ENDLOCAL
+    CD /d "%originalWorkDir%"
+    GOTO main_menu
+)
+:: Git repositories menu
+ECHO Found %gitRepoCount% repositories:
+ECHO. 
+FOR /l %%i IN (1,1,%gitRepoCount%) DO (
+    ECHO   %%i. !repo%%i!
+)
+ECHO. 
 ECHO   z. Back to main menu
 ECHO   x. Exit
+ECHO. 
+SET "choice="
+SET /p choice=Choose a repository (1-%gitRepoCount%, z, or x): 
+
+IF /i "%choice%"=="z" (
+    ENDLOCAL
+    CD /d "%originalWorkDir%"
+    GOTO main_menu
+)
+IF /i "%choice%"=="x" GOTO exit
+IF "%choice%"=="" (ECHO Invalid choice! & PAUSE & GOTO main_option2_menu)
+IF %choice% GTR %gitRepoCount% (ECHO Invalid choice! & PAUSE & GOTO main_option2_menu)
+IF %choice% LSS 1 (ECHO Invalid choice! & PAUSE & GOTO main_option2_menu)
+
+SET "selectedRepo=!repo%choice%!"
+CD /d "%selectedRepo%"
+
+
+:: ========================================================================================================================
+:: main_option2_menu - Git Menu
+:: ========================================================================================================================
+:main_option2_menu
+CLS
+ECHO ===========================================================================================
+ECHO                                           Git Menu
+ECHO ===========================================================================================
+ECHO Repository: !selectedRepo!
 ECHO.
+ECHO   1. Restore tracked files               'git checkout .'
+IF "%selectedRepo%"=="%~dp0" (
+    ECHO   2. Remove untracked files and dirs.    'git clean -fd'        [Unavailable]
+    ECHO   3. Remove everything untracked.        'git clean -fdx'       [Unavailable]
+) ELSE (
+    ECHO   2. Remove untracked files and dirs.    'git clean -fd'
+    ECHO   3. Remove everything untracked.        'git clean -fdx'
+)
+ECHO   4. Prune branches                      'git fetch --prune'
+ECHO   5. Checkout to develop                 'git checkout develop'
+ECHO   6. Pull                                'git pull'
+ECHO.
+IF "%selectedRepo%"=="%~dp0" (
+	ECHO   7. Restore - 1, 2, 5, 6, 4                                    [Unavailable]
+) ELSE (
+	ECHO   7. Restore - 1, 2, 5, 6, 4
+)
+ECHO. 
+ECHO   z. Back to main menu
+ECHO   x. Exit
+ECHO. 
+SET "choice="
 SET /p choice=Enter your choice (1-7, z, or x): 
 
 :: Handle input
-IF "%choice%"=="1" GOTO gitclear_option1
-IF "%choice%"=="2" GOTO gitclear_option2
-IF "%choice%"=="3" GOTO gitclear_option3
-IF "%choice%"=="4" GOTO gitclear_option4
-IF "%choice%"=="5" GOTO gitclear_option5
-IF "%choice%"=="6" GOTO gitclear_option6
-IF "%choice%"=="7" GOTO gitclear_option7
-IF /i "%choice%"=="z" GOTO main_menu
+IF "%choice%"=="1" GOTO git_option1
+IF "%choice%"=="2" GOTO git_option2
+IF "%choice%"=="3" GOTO git_option3
+IF "%choice%"=="4" GOTO git_option4
+IF "%choice%"=="5" GOTO git_option5
+IF "%choice%"=="6" GOTO git_option6
+IF "%choice%"=="7" GOTO git_option7
+
+IF /i "%choice%"=="z" (
+    ENDLOCAL
+    CD /d "%originalWorkDir%"
+    GOTO main_menu
+)
 IF /i "%choice%"=="x" GOTO exit
 
-ECHO Invalid choice! Please try again.
+ECHO Invalid choice!
 PAUSE
-GOTO main_menu
-
+GOTO main_option2_menu
 
 :: ========================================================================
-:: gitclear_option1: Restore tracked files
+:: git_option1: Restore tracked files
 :: ========================================================================
-:gitclear_option1
+:git_option1
 CLS
 ECHO Restoring tracked files...
 ECHO.
@@ -294,29 +435,50 @@ IF %ERRORLEVEL%==0 (
     ECHO ERROR: Command failed with exit code %ERRORLEVEL%.
 )
 PAUSE
-GOTO main_option2
+GOTO main_option2_menu
 
 :: ========================================================================
-:: gitclear_option2: Restore tracked files
+:: git_option2: Remove untracked files and dirs.
 :: ========================================================================
-:gitclear_option2
-CLS
-ECHO Removing untracked files and directories...
-ECHO.
-git clean -fd
-ECHO.
-IF %ERRORLEVEL%==0 (
-    ECHO Command succeeded!
-) ELSE (
-    ECHO ERROR: Command failed with exit code %ERRORLEVEL%.
+:git_option2
+IF "%selectedRepo%"=="%~dp0" (
+    ECHO. 
+    ECHO Option 2 is unavailable. Run this bat outside the repo.
+    PAUSE
+    GOTO main_option2_menu
 )
-PAUSE
-GOTO main_option2
+CLS
+ECHO This will delete all untracked files and directories.
+SET /p confirm=Are you sure you want to remove untracked files and directories? (y/n): 
+IF /i "%confirm%"=="y" (
+	ECHO Removing untracked files and directories...
+	ECHO.
+	git clean -fd
+	ECHO.
+	IF %ERRORLEVEL%==0 (
+		ECHO Command succeeded!
+	) ELSE (
+		ECHO ERROR: Command failed with exit code %ERRORLEVEL%.
+	)
+	PAUSE
+	GOTO main_option2_menu
+) ELSE (
+    ECHO Canceled. Returning to menu...
+	ECHO.
+    PAUSE
+    GOTO main_option2_menu
+)
 
 :: ========================================================================
-:: gitclear_option3: Remove everything untracked.
+:: git_option3: Remove everything untracked.
 :: ========================================================================
-:gitclear_option3
+:git_option3
+IF "%selectedRepo%"=="%~dp0" (
+    ECHO. 
+    ECHO Option 3 is unavailable. Run this bat outside the repo.
+    PAUSE
+    GOTO main_option2_menu
+)
 CLS
 ECHO This will delete all untracked files and directories and also everything that is in .gitignore.
 SET /p confirm=Are you sure you want to remove EVERYTHING untracked? (y/n): 
@@ -330,12 +492,12 @@ IF /i "%confirm%"=="y" (
 		ECHO ERROR: Command failed with exit code %ERRORLEVEL%.
 	)
     PAUSE
-    GOTO main_option2
+    GOTO main_option2_menu
 ) ELSE (
     ECHO Canceled. Returning to menu...
 	ECHO.
     PAUSE
-    GOTO main_option2
+    GOTO main_option2_menu
 )
 	
 ECHO Removing all untracked files...
@@ -348,12 +510,13 @@ IF %ERRORLEVEL%==0 (
     ECHO ERROR: Command failed with exit code %ERRORLEVEL%.
 )
 PAUSE
-GOTO main_option2
+GOTO main_option2_menu
+
 
 :: ========================================================================
-:: gitclear_option4: Prune branches
+:: git_option4: Prune branches
 :: ========================================================================
-:gitclear_option4
+:git_option4
 CLS
 ECHO Prune branches...
 ECHO.
@@ -365,12 +528,12 @@ IF %ERRORLEVEL%==0 (
     ECHO ERROR: Command failed with exit code %ERRORLEVEL%.
 )
 PAUSE
-GOTO main_option2
+GOTO main_option2_menu
 
 :: ========================================================================
-:: gitclear_option5: Checkout to develop
+:: git_option5: Checkout to develop
 :: ========================================================================
-:gitclear_option5
+:git_option5
 CLS
 ECHO Checking out to develop...
 ECHO.
@@ -382,12 +545,12 @@ IF %ERRORLEVEL%==0 (
     ECHO ERROR: Command failed with exit code %ERRORLEVEL%.
 )
 PAUSE
-GOTO main_option2
+GOTO main_option2_menu
 
 :: ========================================================================
-:: gitclear_option6: Pull
+:: git_option6: Pull
 :: ========================================================================
-:gitclear_option6
+:git_option6
 CLS
 ECHO Pulling...
 ECHO.
@@ -399,20 +562,26 @@ IF %ERRORLEVEL%==0 (
     ECHO ERROR: Command failed with exit code %ERRORLEVEL%.
 )
 PAUSE
-GOTO main_option2
+GOTO main_option2_menu
 
 :: ========================================================================
-:: gitclear_option7: Do all of the above
+:: git_option7: Restore - 1, 2, 5, 6, 4 
 :: ========================================================================
-:gitclear_option7
+:git_option7
+IF "%selectedRepo%"=="%~dp0" (
+    ECHO. 
+    ECHO Option 7 is unavailable. Run this bat outside the repo.
+    PAUSE
+    GOTO main_option2_menu
+)
 CLS
 ECHO This will perform several git commands:
 ECHO.
-ECHO  1) Restore tracked files;             (git checkout .)
-ECHO  2) Remove untracked files and dirs;   (git clean -fd)
-ECHO  3) Checkout to develop;               (git checkout develop)
-ECHO  4) Pull;                              (git pull)
-ECHO  5) Prune branches.                    (git fetch --prune)
+ECHO  1) Restore tracked files;             'git checkout .'
+ECHO  2) Remove untracked files and dirs;   'git clean -fd'
+ECHO  3) Checkout to develop;               'git checkout develop'
+ECHO  4) Pull;                              'git pull'
+ECHO  5) Prune branches.                    'git fetch --prune'
 ECHO.
 SET /p confirm=Are you sure you want to proceed? (y/n): 
 IF /i "%confirm%"=="y" (
@@ -485,7 +654,6 @@ IF /i "%confirm%"=="y" (
 
 
 
-
 :: ========================================================================================================================
 :: main_option3 - Windows Firewall
 :: ========================================================================================================================
@@ -494,7 +662,7 @@ CLS
 ECHO ===========================================================================================
 ECHO                                   Windows Firewall
 ECHO ===========================================================================================
-ECHO  Searches FOR exe and dll files recursively and adds/deletes a rule on Windows Firewall
+ECHO  Searches for exe and dll files recursively and adds/deletes a rule on Windows Firewall
 ECHO  to block all incoming and outgoing trafic. This option requires Administrator rights.
 ECHO.
 ECHO  Please select an option:
@@ -511,7 +679,8 @@ IF "%isAdmin%"=="1" (
     ECHO  Not running as Administrator.
 )
 ECHO.
-SET /p choice=Enter your choice (1-4, z, or x): 
+SET "choice="
+SET /p choice=Enter your choice (1-2, z, or x): 
 
 :: Handle input
 IF "%choice%"=="1" GOTO firewall_option1
@@ -525,7 +694,7 @@ GOTO main_option3
 
 
 :: ========================================================================
-:: firewall_option1: Block all web traffic FOR exe and dll files
+:: firewall_option1: Block all web traffic for exe and dll files
 :: ========================================================================
 :firewall_option1
 CLS
@@ -594,35 +763,39 @@ GOTO main_option3
 :: ========================
 
 :main_option4
-ECHO You chose Option 4!
-PAUSE
-GOTO main_menu
+ECHO You chose Option 4! & PAUSE & GOTO main_menu
 
 :main_option5
-ECHO You chose Option 5!
-PAUSE
-GOTO main_menu
+ECHO You chose Option 5! & PAUSE & GOTO main_menu
 
 :main_option6
-ECHO You chose Option 6!
-PAUSE
-GOTO main_menu
+ECHO You chose Option 6! & PAUSE & GOTO main_menu
 
 :main_option7
-ECHO You chose Option 7!
-PAUSE
-GOTO main_menu
+ECHO You chose Option 7! & PAUSE & GOTO main_menu
 
 :main_option8
-ECHO You chose Option 8!
-PAUSE
-GOTO main_menu
+ECHO You chose Option 8! & PAUSE & GOTO main_menu
 
 :main_option9
-ECHO You chose Option 9!
-PAUSE
-GOTO main_menu
+ECHO You chose Option 9! & PAUSE & GOTO main_menu
 
 :exit
 ECHO Exiting... Goodbye!
 exit
+
+
+
+
+
+:: =============================
+:: Subroutines
+:: =============================
+
+::IF "%choice%"=="" CALL :InvalidChoice main_option2_menu
+:ChoiceInvalid
+ECHO Invalid choice! & SET "choice=" & ECHO. & PAUSE & GOTO %~1
+
+:ChoiceCancelled
+ECHO Canceled. Returning to menu... & SET "choice=" & ECHO. & PAUSE & GOTO %~1
+
