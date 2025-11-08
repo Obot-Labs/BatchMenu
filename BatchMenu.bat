@@ -14,6 +14,11 @@ SET "isAdmin=0"
 net session >nul 2>&1
 IF %errorlevel%==0 ( SET "isAdmin=1" )
 
+REM User input
+SET "input="
+REM Some subroutines boolean result: 0 false 1 true
+SET "result=0"
+
 REM ============== GIT vars ==============
 REM Check if Git tool is available and get version
 SET "isGitAvailable=0"
@@ -38,58 +43,54 @@ FOR /F "tokens=1" %%N IN ('npm --version 2^>nul') DO ( SET "npmVersion=%%N" & SE
 
 
 
-
-REM =======================================================================================================================
-REM Start Menu
-REM =======================================================================================================================
+REM Start Menu ============================================================================================================
 :StartMenu
 CALL :Clear
 ECHO ===========================================================================================
-ECHO                                     THIS IS A BATCH TOOL
+ECHO                                   THIS IS A BATCH TOOL
 ECHO ===========================================================================================
 ECHO.
 ECHO  Current directory: %currentDir%
 ECHO  Please select an option:
 ECHO.
-ECHO   0. Working Directory
-ECHO   1. Clear
-ECHO   2. Backup
-IF "%isAdmin%"=="1" (
-    ECHO   3. Firewall
-) ELSE (
-    ECHO   3. Firewall   [Unavailable: needs administrator privileges]
-)
+ECHO   0. Settings
+ECHO   1. Folders and Files Management
+ECHO   2. Windows Helpers
 IF "%isGitAvailable%"=="1" (
-    ECHO   4. Git
+    ECHO   3. Git Menu
 ) ELSE (
-    ECHO   4. Git        [Unavailable: git tool not installed or not found]
+    ECHO   3. Git Menu   [Unavailable: git tool not installed or not found]
 )
-ECHO   5. Placeholder
+ECHO   4. Placeholder
 ECHO.
 ECHO   x. Exit
 ECHO.
-ECHO.
-SET /p choice=Enter your choice (0-5, x): 
-CALL :ValidateInput_Choice 0 5 "StartMenu" "StartMenu"
-IF "%choice%"=="0" GOTO StartMenuOpt0_WorkDir
-IF "%choice%"=="1" GOTO StartMenuOpt1_Clear
-IF "%choice%"=="2" GOTO StartMenuOpt2_Backup
-IF "%choice%"=="3" ( IF "%isAdmin%"=="1" ( GOTO StartMenuOpt3_Firewall ) ELSE ( ECHO. & ECHO Option unavailable. Administrator privileges required. & ECHO. & PAUSE & GOTO StartMenu ) )
-IF "%choice%"=="4" ( IF "%isGitAvailable%"=="1" ( GOTO :StartMenuOpt4_GitMenu ) ELSE ( ECHO. & ECHO Option unavailable. Git is not installed or not found. & ECHO. & PAUSE & GOTO StartMenu ) )
-IF "%choice%"=="5" GOTO StartMenuOpt5_Placeholder
+SET /p input=Enter your input (0-4, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+CALL :ValidateNumber 0 4
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Use a number between '0' and '4' or 'x' to quit. & PAUSE & GOTO StartMenu ) 
+IF "%input%"=="0" GOTO StartMenuOpt0_Settings
+IF "%input%"=="1" GOTO StartMenuOpt1_FoldersFilesManage
+IF "%input%"=="2" GOTO StartMenuOpt2_WindowsHelpers
+IF "%input%"=="3" ( IF "%isGitAvailable%"=="1" ( GOTO :StartMenuOpt3_GitMenu ) ELSE ( ECHO. & ECHO Option unavailable. Git is not installed or not found. & ECHO. & PAUSE & GOTO StartMenu ) )
+IF "%input%"=="4" GOTO StartMenuOpt4_Placeholder
 GOTO StartMenu
 
 
 
 
 
-REM =======================================================================================================================
-REM StartMenuOpt0_WorkDir - Working Directory
-REM =======================================================================================================================
-:StartMenuOpt0_WorkDir
+
+REM ==========================================================================================================================================================================================================
+REM                                                                                          Settings
+REM ==========================================================================================================================================================================================================
+
+
+REM StartMenuOpt0_Settings ================================================================================================
+:StartMenuOpt0_Settings
 CALL :Clear
 ECHO ===========================================================================================
-ECHO                                   Working Directory
+ECHO                                   Settings
 ECHO ===========================================================================================
 ECHO.
 ECHO  Original directory: %originalWorkDir%
@@ -100,33 +101,94 @@ IF "%isAdmin%"=="1" (
     ECHO  Not running as administrator.
 )
 ECHO.
+IF "%isGitAvailable%"=="1" (
+    ECHO     Git: Version %gitVersion%.
+) ELSE (
+    ECHO     Git: Not available. 
+)
+IF "%isNugetAvailable%"=="1" (
+    ECHO   Nuget: Version %nugetVersion%.
+) ELSE (
+    ECHO   Nuget: Not available. 
+)
+IF "%isNpmAvailable%"=="1" (
+    ECHO     npm: Version %npmVersion%.
+) ELSE (
+    ECHO     npm: Not available. 
+)
+ECHO.
+ECHO ===========================================================================================
+ECHO.
+ECHO  Please select an option:
+ECHO.
+ECHO   1. Change Work Directory
+ECHO.
+ECHO   z. Back
+ECHO   x. Exit
+ECHO.
+ECHO.
+SET /p input=Enter your input (1, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenu
+CALL :ValidateNumber 1 1
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select number '1', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt0_Settings ) 
+IF "%input%"=="1" GOTO StartMenuOpt0_SettingsOpt1_WorkDir
+GOTO StartMenuOpt0_Settings
+
+
+
+
+REM ============================================================================ Working Directory ===============================================================================================
+
+
+REM StartMenuOpt0_SettingsOpt1_WorkDir - Working Directory ================================================================
+:StartMenuOpt0_SettingsOpt1_WorkDir
+CALL :Clear
+ECHO ===========================================================================================
+ECHO                                   Working Directory
+ECHO ===========================================================================================
+ECHO.
+ECHO  Original directory: %originalWorkDir%
+ECHO  Current directory:  %currentDir%
+ECHO.
+ECHO   -- Change working Directory ----
 ECHO   1. Move up to parent folder
 ECHO   2. Choose a subfolder
 ECHO   3. Reset to original directory
 ECHO.
-ECHO   z. Back to main menu
+ECHO   -- Open directory in explorer --
+ECHO   4. Original directory
+ECHO   5. Current directory
+ECHO.
+ECHO   z. Back
 ECHO   x. Exit
 ECHO.
 ECHO.
-SET /P choice=Enter your choice (1-3, z, x): 
-CALL :ValidateInput_Choice 1 3 "StartMenuOpt0_WorkDir" "StartMenu"
-IF "%choice%"=="1" GOTO WorkDirOpt1
-IF "%choice%"=="2" GOTO WorkDirOpt2
-IF "%choice%"=="3" GOTO WorkDirOpt3
-GOTO StartMenuOpt0_WorkDir
+SET /P input=Enter your input (1-5, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenuOpt0_Settings
+CALL :ValidateNumber 1 5
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Use a number between '1' and '5', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt0_SettingsOpt1_WorkDir ) 
+IF "%input%"=="1" GOTO StartMenuOpt0_SettingsOpt1_WorkDirOpt1
+IF "%input%"=="2" GOTO StartMenuOpt0_SettingsOpt1_WorkDirOpt2
+IF "%input%"=="3" GOTO StartMenuOpt0_SettingsOpt1_WorkDirOpt3
+IF "%input%"=="4" GOTO StartMenuOpt0_SettingsOpt1_WorkDirOpt4
+IF "%input%"=="5" GOTO StartMenuOpt0_SettingsOpt1_WorkDirOpt5
+GOTO StartMenuOpt0_SettingsOpt1_WorkDir
 
 
-REM WorkDirOpt1 - Move up to parent folder ---------------------------------------------------------------------------------
-:WorkDirOpt1
+REM StartMenuOpt0_SettingsOpt1_WorkDirOpt1 - Move up to parent folder -----------------------------------------------------
+:StartMenuOpt0_SettingsOpt1_WorkDirOpt1
 CALL :Clear
 FOR %%A IN ("%currentDir%\..") DO SET "parentDir=%%~fA"
-IF NOT EXIST "%parentDir%" ( ECHO. & ECHO  ERROR: Parent folder not found. & PAUSE & GOTO StartMenuOpt0_WorkDir )
+IF NOT EXIST "%parentDir%" ( ECHO. & ECHO  ERROR: Parent folder not found. & PAUSE & GOTO StartMenuOpt0_SettingsOpt1_WorkDir )
 REM remove backslash if exists for safety
 IF "%parentDir:~-1%"=="\" SET "parentDir=%parentDir:~0,-1%"
-SET "currentDir=%parentDir%" & CD /D "%currentDir%" & SET "parentDir=" & GOTO StartMenuOpt0_WorkDir
+SET "currentDir=%parentDir%" & CD /D "%currentDir%" & SET "parentDir=" & GOTO StartMenuOpt0_SettingsOpt1_WorkDir
 
-REM WorkDirOpt2 - Choose a subfolder ---------------------------------------------------------------------------------------
-:WorkDirOpt2
+
+REM StartMenuOpt0_SettingsOpt1_WorkDirOpt2 - Choose a subfolder -----------------------------------------------------------
+:StartMenuOpt0_SettingsOpt1_WorkDirOpt2
 CALL :Clear
 SETLOCAL ENABLEDELAYEDEXPANSION
 SET "folderCount=0"
@@ -139,49 +201,105 @@ ECHO   %currentDir%
 ECHO.
 REM List only immediate subfolders (non-recursive)
 FOR /D %%d IN ("%currentDir%\*") DO ( SET /A folderCount+=1 & SET "folder!folderCount!=%%~fd" )
-IF !folderCount! EQU 0 ( ECHO No subfolders found in this directory. & ECHO. & PAUSE & ENDLOCAL & GOTO StartMenuOpt0_WorkDir )
+IF !folderCount! EQU 0 ( ECHO No subfolders found in this directory. & ECHO. & ENDLOCAL & PAUSE & GOTO StartMenuOpt0_SettingsOpt1_WorkDir )
 
 ECHO Found !folderCount! subfolder(s):
 ECHO.
 FOR /L %%i IN (1,1,!folderCount!) DO ( ECHO   %%i. !folder%%i! )
 ECHO.
-ECHO   z. Back to previous menu
+ECHO   z. Back
 ECHO   x. Exit
 ECHO.
-SET /P choice=Choose a folder (1-!folderCount!, z, x): 
-CALL :ValidateInput_Choice 1 !folderCount! "WorkDirOpt2" "StartMenuOpt0_WorkDir"
+SET /P input=Choose a folder (1-!folderCount!, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" ( ENDLOCAL & GOTO StartMenuOpt0_SettingsOpt1_WorkDir )
+CALL :ValidateNumber 1 !folderCount!
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Use a number between '1' and '!folderCount!', 'z' to go back or 'x' to quit. & ENDLOCAL & PAUSE & GOTO StartMenuOpt0_SettingsOpt1_WorkDirOpt2 ) 
 
-SET "selectedFolder=!folder%choice%!"
+SET "selectedFolder=!folder%input%!"
 ENDLOCAL & SET "selectedFolder=%selectedFolder%"
 REM remove backslash if exists for safety
 IF "%selectedFolder:~-1%"=="\" SET "selectedFolder=%selectedFolder:~0,-1%"
-CD /D "%selectedFolder%"  & SET "currentDir=%selectedFolder%" & SET "selectedFolder=" & GOTO StartMenuOpt0_WorkDir
+CD /D "%selectedFolder%"  & SET "currentDir=%selectedFolder%" & SET "selectedFolder=" & GOTO StartMenuOpt0_SettingsOpt1_WorkDir
 
-REM WorkDirOpt3 - Reset to original directory ------------------------------------------------------------------------------
-:WorkDirOpt3
+
+REM StartMenuOpt0_SettingsOpt1_WorkDirOpt3 - Reset to original directory --------------------------------------------------
+:StartMenuOpt0_SettingsOpt1_WorkDirOpt3
 CALL :Clear
 ECHO  This will reset the working directory 
 ECHO   from: %currentDir%
 ECHO   to:   %originalWorkDir%
 ECHO.
-SET /p confirm=Are you sure you want to continue? y/n: 
-CALL :ValidateInput_Confirm "WorkDirOpt3" "StartMenuOpt0_WorkDir"
+SET /p input=Are you sure you want to continue? y/n: 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenuOpt0_SettingsOpt1_WorkDir
+IF /i "%input%"=="n" ( ECHO. & ECHO Backup cancelled. & PAUSE & GOTO StartMenuOpt0_SettingsOpt1_WorkDir )
+IF /I NOT "%input%"=="y" ( ECHO. & ECHO That's not a valid option. Select either 'y' or 'n' & PAUSE & GOTO StartMenuOpt0_SettingsOpt1_WorkDirOpt3 )
 CD /D "%originalWorkDir%" & SET "currentDir=%originalWorkDir%"
-ECHO. & ECHO  Working directory has been reset. & ECHO. & PAUSE & GOTO StartMenuOpt0_WorkDir
+ECHO. & ECHO  Working directory has been reset. & ECHO. & PAUSE & GOTO StartMenuOpt0_SettingsOpt1_WorkDir
+
+
+REM StartMenuOpt0_SettingsOpt1_WorkDirOpt4 - Open original dir in windows explorer -----------------------------------------
+:StartMenuOpt0_SettingsOpt1_WorkDirOpt4
+CALL :Clear
+ECHO Opening original directory in Windows Explorer... & ECHO.
+explorer "%originalWorkDir%"
+GOTO StartMenuOpt0_SettingsOpt1_WorkDir
+
+REM StartMenuOpt0_SettingsOpt1_WorkDirOpt5 - Open current dir in windows explorer ----------------------------------------
+:StartMenuOpt0_SettingsOpt1_WorkDirOpt5
+CALL :Clear
+ECHO Opening current directory in Windows Explorer... & ECHO.
+explorer "%currentDir%"
+GOTO StartMenuOpt0_SettingsOpt1_WorkDir
 
 
 
 
 
-REM =======================================================================================================================
-REM StartMenuOpt1_Clear - Clear
-REM =======================================================================================================================
-:StartMenuOpt1_Clear
+
+REM ==========================================================================================================================================================================================================
+REM                                                                                     Folder and Files Management
+REM ==========================================================================================================================================================================================================
+
+
+REM StartMenuOpt1_FoldersFilesManage - Manage Directories and Files =======================================================
+:StartMenuOpt1_FoldersFilesManage
+CALL :Clear
+ECHO ===========================================================================================
+ECHO                              Folder and Files Management
+ECHO ===========================================================================================
+ECHO.
+ECHO  Current directory:  %currentDir%
+ECHO.
+ECHO   1. Delete Files or Folders recursively
+ECHO   2. Create Backup of current directory
+ECHO.
+ECHO   z. Back
+ECHO   x. Exit
+ECHO.
+ECHO.
+SET /P input=Enter your input (1-2, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenu
+CALL :ValidateNumber 1 2
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Use a number between '1' and '2', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt1_FoldersFilesManage ) 
+IF "%input%"=="1" GOTO StartMenuOpt1_FoldersFilesManageOpt1_Delete
+IF "%input%"=="2" GOTO StartMenuOpt1_FoldersFilesManageOpt2_Backup
+GOTO StartMenuOpt1_FoldersFilesManage
+
+
+
+
+REM ============================================================================ Delete Files and Folders ===============================================================================================
+
+REM StartMenuOpt1_FoldersFilesManageOpt1_Delete - Delete Files and Folders ================================================
+:StartMenuOpt1_FoldersFilesManageOpt1_Delete
 CALL :Clear 
 ECHO ===========================================================================================
-ECHO                                      Clear
+ECHO                                 Delete Files and Folders
 ECHO ===========================================================================================
-ECHO  Clear cache or delete folders recursively. This actions cannot be undone.
+ECHO  Delete files or folders recursively. This actions cannot be undone.
 ECHO  Current directory: %currentDir%
 ECHO.
 ECHO  Please select an option:
@@ -197,150 +315,120 @@ ECHO   -- Delete custom recursively ---
 ECHO   6. Delete custom folders
 ECHO   7. Delete custom files
 ECHO.
-ECHO   -- Clear cache -----------------
-IF "%isNugetAvailable%"=="1" (
-    ECHO   8. Clear NuGet cache
-) ELSE (
-    ECHO   8. Clear NuGet cache     [Unavailable: nuget tool not available]
-)
-IF "%isNpmAvailable%"=="1" (
-    ECHO   9. Clear npm cache
-) ELSE (
-    ECHO   9. Clear npm cache       [Unavailable: npm tool not available]
-)
-
-ECHO.
-ECHO   z. Back to main menu
+ECHO   z. Back
 ECHO   x. Exit
 ECHO.
-SET /p choice=Enter your choice (1-9, z, x): 
-CALL :ValidateInput_Choice 1 9 "StartMenuOpt1_Clear" "StartMenu"
-IF "%choice%"=="1" GOTO ClearOpt1
-IF "%choice%"=="2" GOTO ClearOpt2
-IF "%choice%"=="3" GOTO ClearOpt3
-IF "%choice%"=="4" GOTO ClearOpt4
-IF "%choice%"=="5" GOTO ClearOpt5
-IF "%choice%"=="6" GOTO ClearOpt6
-IF "%choice%"=="7" GOTO ClearOpt7
-IF "%choice%"=="8" ( IF "%isNugetAvailable%"=="1" ( GOTO ClearOpt8 ) ELSE ( ECHO. & ECHO Option unavailable. Nuget tool must be available in win environment. & ECHO. & PAUSE & GOTO StartMenuOpt1_Clear ) )
-IF "%choice%"=="9" ( IF "%isNpmAvailable%"=="1" ( GOTO ClearOpt9 ) ELSE ( ECHO. & ECHO Option unavailable. Npm tool must be available in win environment. & ECHO. & PAUSE & GOTO StartMenuOpt1_Clear ) )
-GOTO StartMenuOpt1_Clear
+SET /p input=Enter your choice (1-7, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenuOpt1_FoldersFilesManage
+CALL :ValidateNumber 1 7
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Use a number between '1' and '7', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt1_Delete ) 
+IF "%input%"=="1" GOTO StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt1
+IF "%input%"=="2" GOTO StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt2
+IF "%input%"=="3" GOTO StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt3
+IF "%input%"=="4" GOTO StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt4
+IF "%input%"=="5" GOTO StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt5
+IF "%input%"=="6" GOTO StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt6
+IF "%input%"=="7" GOTO StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt7
+GOTO StartMenuOpt1_FoldersFilesManageOpt1_Delete
 
 
-REM ClearOpt1 - Delete obj/bin --------------------------------------------------------------------------------------------
-:ClearOpt1
+
+
+REM StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt1 - Delete obj/bin ------------------------------------------------------
+:StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt1
 CALL :Clear
 CALL :DeleteFolderRecurs bin
 CALL :DeleteFolderRecurs obj
-ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt1_Clear
+ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt1_Delete
 
-REM ClearOpt2 - Delete packages -------------------------------------------------------------------------------------------
-:ClearOpt2
+REM StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt2 - Delete packages -----------------------------------------------------
+:StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt2
 CALL :Clear
 CALL :DeleteFolderRecurs packages
-ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt1_Clear
+ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt1_Delete
 
-REM ClearOpt3 - Delete node_modules ---------------------------------------------------------------------------------------
-:ClearOpt3
+REM StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt3 - Delete node_modules -------------------------------------------------
+:StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt3
 CALL :Clear
 CALL :DeleteFolderRecurs node_modules
-ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt1_Clear
+ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt1_Delete
 
-REM ClearOpt4 - Delete .vs ------------------------------------------------------------------------------------------------
-:ClearOpt4
+REM StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt4 - Delete .vs ----------------------------------------------------------
+:StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt4
 CALL :Clear
 CALL :DeleteFolderRecurs .vs
-ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt1_Clear
+ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt1_Delete
 
-REM ClearOpt5 - Delete .git (with confirmation) ---------------------------------------------------------------------------
-:ClearOpt5
+REM StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt5 - Delete .git (with confirmation) -------------------------------------
+:StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt5
 CALL :Clear
-SET /p confirm=Are you sure you want to delete ALL .git folders? y/n: 
-CALL :ValidateInput_Confirm "ClearOpt5" "StartMenuOpt1_Clear"
+SET /p confirm=Are you sure you want to delete ALL .git folders? y/n:
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenuOpt1_FoldersFilesManageOpt1_Delete
+IF /i "%input%"=="n" ( ECHO. & ECHO Delete cancelled. & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt1_Delete )
+IF /I NOT "%input%"=="y" ( ECHO. & ECHO That's not a valid option. Select either 'y' or 'n' & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt5 )
 CALL :DeleteFolderRecurs .git
-ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt1_Clear
+ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt1_Delete
 
-REM ClearOpt6 - Delete custom folder --------------------------------------------------------------------------------------
-:ClearOpt6
+REM StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt6 - Delete custom folder ------------------------------------------------
+:StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt6
 CALL :Clear
-ECHO Delete a custom folder recursively. Wildcards '*' and '?' not allowed.
+ECHO Delete a custom folder recursively.
+ECHO Forbidden characters: \ / : * ? ^< ^> ^| not allowed. Quotes " are ignored.
 ECHO Press 'z' to cancel and go back to menu or 'x' to exit.
 ECHO.
-SET /P customFolderToClear=Enter the folder name to delete (e.g. dist, build, temp): 
-CALL :ValidateInput_StringNoWildcards "customFolderToClear" "ClearOpt6" "StartMenuOpt1_Clear"
-ECHO.
-ECHO Cleaning "%customFolderToClear%" folders recursively...
-
+SET /P input=Enter the folder name to delete (e.g. dist, build, temp): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenuOpt1_FoldersFilesManageOpt1_Delete
+CALL :ValidateString_WindowsFolderName "input"
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid input. Please try again. & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt6 ) 
 REM Delete folders recursively, safely handling spaces in folder names
+ECHO. & ECHO Cleaning "%input%" folders recursively...
 FOR /D /R "%currentDir%" %%p IN (*) DO (
-    IF /I "%%~nxp"=="%customFolderToClear%" (
+    IF /I "%%~nxp"=="%input%" (
         IF EXIST "%%~fp" (
             RD /S /Q "%%~fp"
-            IF EXIST "%%~fp" (
-                ECHO  -- Error: could not completely delete "%%~fp"
-            ) ELSE (
-                ECHO  -- Deleted "%%~fp"
-            )
+            IF EXIST "%%~fp" ( ECHO  -- Error: could not completely delete "%%~fp" ) ELSE ( ECHO  -- Deleted "%%~fp" )
         )
     )
 )
-SET "customFolderToClear="
-ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt1_Clear
+ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt1_Delete
 
-REM ClearOpt7 - Delete custom files (no wildcards, supports spaces in user input) -----------------------------------------
-:ClearOpt7
+REM StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt7 - Delete custom files (no wildcards, supports spaces in user input) ---
+:StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt7
 CALL :Clear
-ECHO Delete a custom file recursively. Wildcards '*' and '?' not allowed.
+ECHO Delete a custom file recursively.
+ECHO Forbidden characters: \ / : * ? ^< ^> ^| not allowed. Quotes " are ignored.
 ECHO Press 'z' to cancel and go back to menu or 'x' to exit.
 ECHO.
-SET /P customFileToClear=Enter the file name to delete (e.g. app.log, debug.txt): 
-CALL :ValidateInput_StringNoWildcards "customFileToClear" "ClearOpt7" "StartMenuOpt1_Clear"
-ECHO. & ECHO Cleaning "%customFileToClear%" files recursively...
-
+SET /P input=Enter the file name to delete (e.g. app.log, debug.txt): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenuOpt1_FoldersFilesManageOpt1_Delete
+CALL :ValidateString_NoWildcards "input"
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid input. Please try again. & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt7 ) 
+ECHO. & ECHO Cleaning "%input%" files recursively...
 REM Change to script directory so relative names behave as expected
 PUSHD "%currentDir%" 2>NUL || ( ECHO Failed to change directory to "%currentDir%". & PAUSE & GOTO StartMenuOpt1_Clear )
 REM Use DIR to find matching files (handles spaces & quoted names), iterate with FOR /F "delims="
 SETLOCAL
-FOR /F "usebackq delims=" %%F IN (`DIR /B /S "%customFileToClear%" 2^>nul`) DO (
+FOR /F "usebackq delims=" %%F IN (`DIR /B /S "%input%" 2^>nul`) DO (
     IF EXIST "%%F" (
         DEL /F /Q "%%F" 2>nul
-        IF EXIST "%%F" (
-            ECHO  -- Error: could not completely delete "%%F"
-        ) ELSE (
-            ECHO  -- Deleted "%%F"
-        )
+        IF EXIST "%%F" ( ECHO  -- Error: could not completely delete "%%F" ) ELSE ( ECHO  -- Deleted "%%F" )
     )
 )
 ENDLOCAL
 POPD
-ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt1_Clear
-
-REM ClearOpt8 - Clear NuGet cache -----------------------------------------------------------------------------------------
-:ClearOpt8
-CALL :Clear
-ECHO Cleaning NuGet cache...
-nuget locals all -clear
-ECHO.
-IF %ERRORLEVEL%==0 ( ECHO. & ECHO Success! & PAUSE & GOTO StartMenuOpt1_Clear ) ELSE ( ECHO. & ECHO ERROR: Command failed with exit code %ERRORLEVEL%. & PAUSE & GOTO StartMenuOpt1_Clear )
-
-REM ClearOpt9 - Clear npm cache -------------------------------------------------------------------------------------------
-:ClearOpt9
-CALL :Clear
-ECHO Cleaning npm cache...
-npm cache clean --force
-ECHO.
-IF %ERRORLEVEL%==0 ( ECHO. & ECHO Success! & PAUSE & GOTO StartMenuOpt1_Clear ) ELSE ( ECHO. & ECHO ERROR: Command failed with exit code %ERRORLEVEL%. & PAUSE & GOTO StartMenuOpt1_Clear )
+ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt1_Delete
 
 
 
 
+REM ================================================================================= Backup =================================================================================================
 
-
-
-REM =======================================================================================================================
-REM StartMenuOpt2_Backup - Backup
-REM =======================================================================================================================
-:StartMenuOpt2_Backup
+REM StartMenuOpt1_FoldersFilesManageOpt2_Backup - Backup ==================================================================
+:StartMenuOpt1_FoldersFilesManageOpt2_Backup
 CALL :Clear
 ECHO ===========================================================================================
 ECHO                                         Backup
@@ -352,18 +440,21 @@ ECHO.
 ECHO   1. Quick backup current folder
 ECHO   2. Smart backup current folder
 ECHO.
-ECHO   z. Back to main menu
+ECHO   z. Back
 ECHO   x. Exit
 ECHO.
-SET /p choice=Enter your choice (1-2, z, x): 
-CALL :ValidateInput_Choice 1 2 "StartMenuOpt2_Backup" "StartMenu"
-IF "%choice%"=="1" GOTO BackupOpt1
-IF "%choice%"=="2" GOTO BackupOpt2
-GOTO StartMenuOpt2_Backup
+SET /p input=Enter your choice (1-2, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenuOpt1_FoldersFilesManage
+CALL :ValidateNumber 1 2
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '2', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt2_Backup ) 
+IF "%input%"=="1" GOTO StartMenuOpt1_FoldersFilesManageOpt2_BackupOpt1
+IF "%input%"=="2" GOTO StartMenuOpt1_FoldersFilesManageOpt2_BackupOpt2
+GOTO StartMenuOpt1_FoldersFilesManageOpt2_Backup
 
 
 
-:BackupOpt1
+:StartMenuOpt1_FoldersFilesManageOpt2_BackupOpt1
 CALL :Clear
 SETLOCAL
 ECHO Creating quick backup of current folder... & ECHO.
@@ -384,7 +475,7 @@ ECHO Source:      "%srcDir%" & ECHO Destination: "%backupDir%" & ECHO.
 REM Perform backup (exclude .bat itself and destination)
 robocopy "%srcDir%" "%backupDir%" /E /XD "%backupDir%" /XF "%~f0"
 IF %ERRORLEVEL% LSS 8 ( ECHO. & ECHO Backup completed successfully! ) ELSE ( ECHO. & ECHO ERROR: Backup failed with code %ERRORLEVEL%. )
-ECHO. & ENDLOCAL & PAUSE & GOTO StartMenuOpt2_Backup
+ECHO. & ENDLOCAL & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt2_Backup
 
 
 REM BackupOpt2 - Smart recursive backup with full exclusions + logging
@@ -393,7 +484,7 @@ REM   Performs a backup copy of all files in the same directory as the bat to a 
 REM   Automatically excludes unwanted folders like "bin", "obj", "packages", "node_modules",
 REM   and asks the user if ".vs" and ".git" are also to be excluded.
 REM   Creates a txt file log in the backup folder.
-:BackupOpt2
+:StartMenuOpt1_FoldersFilesManageOpt2_BackupOpt2
 CALL :Clear
 ECHO Backup routine started
 SETLOCAL ENABLEDELAYEDEXPANSION
@@ -406,6 +497,10 @@ FOR /F "tokens=1-4 delims=/-. " %%a IN ("%DATE%") DO ( SET "Day=%%a" & SET "Mont
 FOR /F "tokens=1-2 delims=:." %%a IN ("%TIME%") DO ( SET "Hour=%%a" & SET "Min=%%b" )
 SET "Hour=%Hour: =0%" & SET "Min=%Min: =0%"
 SET "TimeStamp=%Year%%Month%%Day%-%Hour%%Min%"
+
+
+REM ---------------------------------------------------------------------------------------------------------------------
+
 REM Build backup directory
 SET "BackupDir=%WorkDirFull%_Backup_%TimeStamp%"
 ECHO.
@@ -418,11 +513,9 @@ ECHO Directories named: 'bin', 'obj', 'packages' and 'node_modules'.
 ECHO '.git' and '.vs' are optional.
 ECHO Script file "%~nx0" will be excluded.
 ECHO. & ECHO.
-
 REM 1. Set excluded dirs ==========================================
 SET "ExcludeDirs=bin obj packages node_modules"
-
-REM Search for .git folders ------------------------------------
+REM Search for .git folders
 ECHO Searching for .git folders...
 DIR /S /B /AD "%WorkDirFull%" | FINDSTR /I "\\.git$" >"%TEMP%\gitlist.txt"
 IF EXIST "%TEMP%\gitlist.txt" (
@@ -432,26 +525,21 @@ IF EXIST "%TEMP%\gitlist.txt" (
 
 IF /I "%IncludeGit%"=="N" ( SET "ExcludeDirs=%ExcludeDirs% .git" )
 ECHO. & ECHO.
-
-REM Search for .vs folders -------------------------------------
+REM Search for .vs folders
 ECHO Searching for .vs folders...
 DIR /S /B /AD "%WorkDirFull%" | FINDSTR /I "\\.vs$" >"%TEMP%\vslist.txt"
 IF EXIST "%TEMP%\vslist.txt" (
     FOR /F "usebackq delims=" %%V IN ("%TEMP%\vslist.txt") DO ECHO Found .vs: "%%V"
     SET /P "IncludeVs=Include the above .vs folders in the backup? y/n: "
 ) ELSE ( SET "IncludeVs=None" & ECHO No .vs folders found. )
-
 IF /I "%IncludeVs%"=="N" ( SET "ExcludeDirs=%ExcludeDirs% .vs" )
 ECHO. & ECHO.
-
-REM Confirm proceed -----------------------------------------------
+REM Confirm proceed
 SET /P "Confirm=Proceed with the backup? y/n: "
-IF /I NOT "%Confirm%"=="y" ( ECHO Backup cancelled. & ENDLOCAL & GOTO StartMenuOpt2_Backup )
-
+IF /I NOT "%Confirm%"=="y" ( ECHO Backup cancelled. & ENDLOCAL & GOTO StartMenuOpt1_FoldersFilesManageOpt2_Backup )
 REM 2. Start backup ===============================================
 ECHO. & ECHO Starting copy... & ECHO.
 IF NOT EXIST "%BackupDir%" MKDIR "%BackupDir%"
-
 REM Build robocopy exclusion string -------------------------------
 SET "ExcludeDirsStr="
 FOR %%X IN (%ExcludeDirs%) DO SET "ExcludeDirsStr=!ExcludeDirsStr! %%X"
@@ -468,45 +556,14 @@ ECHO ROBOCOPY returned RC: %Rc%
 REM 3. Create final log ===========================================
 SET "MainLog=%BackupDir%\backup_log_%TimeStamp%.txt"
 ECHO Creating log...
-
 (
-    ECHO Backup completed on %DATE% %TIME%
-    ECHO.
-    ECHO Source: %WorkDirFull%
-    ECHO Destination: %BackupDir%
-    ECHO.
-    ECHO Excluded folders: %ExcludeDirs%
-    ECHO.
-
-    REM .git folders logging --------------------------------------
-    IF EXIST "%TEMP%\gitlist.txt" (
-        IF /I "%IncludeGit%"=="N" (
-            ECHO .git folders were excluded:
-            TYPE "%TEMP%\gitlist.txt"
-        ) ELSE IF /I "%IncludeGit%"=="Y" (
-            ECHO .git folders were included.
-        ) ELSE (
-            ECHO No .git folders found.
-        )
-        ECHO.
-    ) ELSE ( ECHO No .git folders found. & ECHO. )
-
-    REM .vs folders logging ---------------------------------------
-    IF EXIST "%TEMP%\vslist.txt" (
-        IF /I "%IncludeVs%"=="N" (
-            ECHO .vs folders were excluded:
-            TYPE "%TEMP%\vslist.txt"
-        ) ELSE IF /I "%IncludeVs%"=="Y" (
-            ECHO .vs folders were included.
-        ) ELSE (
-            ECHO No .vs folders found.
-        )
-        ECHO.
-    ) ELSE ( ECHO No .vs folders found. & ECHO. )
-
-    ECHO ---------------------------------------------------------------
-    ECHO Robocopy details:
-    ECHO ---------------------------------------------------------------
+    ECHO Backup completed on %DATE% %TIME% & ECHO. & ECHO Source: %WorkDirFull% & ECHO Destination: %BackupDir% & ECHO. & ECHO Excluded folders: %ExcludeDirs% & ECHO.
+    REM .git folders logging
+    IF EXIST "%TEMP%\gitlist.txt" ( IF /I "%IncludeGit%"=="N" ( ECHO .git folders were excluded: & TYPE "%TEMP%\gitlist.txt" ) ELSE IF /I "%IncludeGit%"=="Y" ( ECHO .git folders were included. ) ELSE ( ECHO No .git folders found. ) & ECHO. ) ELSE ( ECHO No .git folders found. & ECHO. )
+    REM .vs folders logging
+    IF EXIST "%TEMP%\vslist.txt" ( IF /I "%IncludeVs%"=="N" ( ECHO .vs folders were excluded: & TYPE "%TEMP%\vslist.txt" ) ELSE IF /I "%IncludeVs%"=="Y" ( ECHO .vs folders were included. ) ELSE ( ECHO No .vs folders found. ) & ECHO. ) ELSE ( ECHO No .vs folders found. & ECHO. )
+	REM Robocopy logging
+    ECHO Robocopy details: & ECHO ---------------------------------------------------------------
     IF EXIST "%RoboLog%" TYPE "%RoboLog%"
 ) > "%MainLog%"
 
@@ -517,17 +574,58 @@ IF %Rc% GEQ 8 (
     MKDIR "%BackupDir%"
     ECHO Backup failed with RC %Rc% on %DATE% %TIME% > "%MainLog%"
 )
-
 ECHO Done! & ECHO Backup log saved: "%MainLog%" & ECHO.
-ENDLOCAL & PAUSE & GOTO StartMenuOpt2_Backup
+ENDLOCAL & PAUSE & GOTO StartMenuOpt1_FoldersFilesManageOpt2_Backup
 
 
 
 
-REM =======================================================================================================================
-REM StartMenuOpt3_Firewall - Windows Firewall
-REM =======================================================================================================================
-:StartMenuOpt3_Firewall
+
+
+
+REM ==========================================================================================================================================================================================================
+REM                                                                                          Windows Helpers
+REM ==========================================================================================================================================================================================================
+
+
+
+REM StartMenuOpt2_WindowsHelpers - Windows Helpers ========================================================================
+:StartMenuOpt2_WindowsHelpers
+CALL :Clear
+ECHO ===========================================================================================
+ECHO                                   Windows Helpers
+ECHO ===========================================================================================
+ECHO  Some Windows helper commands.
+ECHO  Current directory:  %currentDir%
+ECHO.
+ECHO  Please select an option:
+ECHO.
+IF "%isAdmin%"=="1" (
+    ECHO   1. Windows Firewall rules
+) ELSE (
+    ECHO   1. Windows Firewall rules   [Unavailable: needs administrator privileges]
+)
+ECHO   2. Windows environment      [Unavailable: Comming soon]
+ECHO.
+ECHO   z. Back 
+ECHO   x. Exit
+ECHO.
+SET /p input=Enter your choice (1, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenu
+CALL :ValidateNumber 1 2
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select number '1', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt2_WindowsHelpers )
+IF "%input%"=="1" ( IF "%isAdmin%"=="1" ( GOTO StartMenuOpt2_WindowsHelpersOpt1_Firewall ) ELSE ( ECHO. & ECHO Option unavailable. Administrator privileges required. & ECHO. & PAUSE & GOTO StartMenuOpt2_WindowsHelpers ) )
+IF "%input%"=="2" ECHO. & ECHO Comming soon!! & ECHO. & PAUSE & GOTO StartMenuOpt2_WindowsHelpers 
+GOTO StartMenuOpt2_WindowsHelpers
+
+
+
+REM ================================================================================= Windows Firewall =================================================================================================
+
+
+REM StartMenuOpt2_WindowsHelpersOpt1_Firewall - Windows Firewall ==========================================================
+:StartMenuOpt2_WindowsHelpersOpt1_Firewall
 CALL :Clear
 ECHO ===========================================================================================
 ECHO                                   Windows Firewall
@@ -548,51 +646,55 @@ ECHO   4. EXE and DLL files
 ECHO   5. COM, SCR, CPL, OCX and SYS files
 ECHO   6. All the above
 ECHO.
-ECHO   z. Back to main menu
+ECHO   z. Back 
 ECHO   x. Exit
 ECHO.
-SET /p choice=Enter your choice (1-6, z, x): 
-CALL :ValidateInput_Choice 1 6 "StartMenuOpt3_Firewall" "StartMenu"
-IF "%choice%"=="1" GOTO FirewallOpt1
-IF "%choice%"=="2" GOTO FirewallOpt2
-IF "%choice%"=="3" GOTO FirewallOpt3
-IF "%choice%"=="4" GOTO FirewallOpt4
-IF "%choice%"=="5" GOTO FirewallOpt5
-IF "%choice%"=="6" GOTO FirewallOpt6
-GOTO StartMenuOpt3_Firewall
+SET /p input=Enter your choice (1-6, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenuOpt2_WindowsHelpers
+CALL :ValidateNumber 1 6
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '6', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt2_WindowsHelpersOpt1_Firewall )
+IF "%input%"=="1" GOTO StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt1
+IF "%input%"=="2" GOTO StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt2
+IF "%input%"=="3" GOTO StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt3
+IF "%input%"=="4" GOTO StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt4
+IF "%input%"=="5" GOTO StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt5
+IF "%input%"=="6" GOTO StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt6
+GOTO StartMenuOpt2_WindowsHelpersOpt1_Firewall
 
-REM FirewallOpt1: Block web traffic - Block all EXE and DLL files ---------------------------------------------------------
-:FirewallOpt1
+
+REM StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt1: Block web traffic - Block all EXE and DLL files ---------------------------------------------------------
+:StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt1
 CALL :Clear
 CALL :FirewallAddBlockRules *.exe *.dll
 ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt3_Firewall
 
-REM FirewallOpt2: Block web traffic - COM, SCR, CPL, OCX and SYS files ----------------------------------------------------
-:FirewallOpt2
+REM StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt2: Block web traffic - COM, SCR, CPL, OCX and SYS files ----------------------------------------------------
+:StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt2
 CALL :Clear
 CALL :FirewallAddBlockRules *.com *.scr *.cpl *.ocx *.sys
 ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt3_Firewall
 
-REM FirewallOpt3: Block web traffic - All the above -----------------------------------------------------------------------
-:FirewallOpt3
+REM StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt3: Block web traffic - All the above -----------------------------------------------------------------------
+:StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt3
 CALL :Clear
 CALL :FirewallAddBlockRules *.exe *.dll *.com *.scr *.cpl *.ocx *.sys
 ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt3_Firewall
 
-REM FirewallOpt4: Remove web trafic block - EXE and DLL files -------------------------------------------------------------
-:FirewallOpt4
+REM StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt4: Remove web trafic block - EXE and DLL files -------------------------------------------------------------
+:StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt4
 CALL :Clear
 CALL :FirewallRemoveBlockRules *.exe *.dll
 ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt3_Firewall
 
-REM FirewallOpt5: Remove web trafic block - COM, SCR, CPL, OCX and SYS files ----------------------------------------------
-:FirewallOpt5
+REM StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt5: Remove web trafic block - COM, SCR, CPL, OCX and SYS files ----------------------------------------------
+:StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt5
 CALL :Clear
 CALL :FirewallRemoveBlockRules *.com *.scr *.cpl *.ocx *.sys
 ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt3_Firewall
 
-REM FirewallOpt6: Remove web trafic block -  All the above  ---------------------------------------------------------------
-:FirewallOpt6
+REM StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt6: Remove web trafic block -  All the above  ---------------------------------------------------------------
+:StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt6
 CALL :Clear
 CALL :FirewallRemoveBlockRules *.exe *.dll *.com *.scr *.cpl *.ocx *.sys
 ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt3_Firewall
@@ -606,41 +708,106 @@ ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt3_Firewall
 
 
 
-REM =======================================================================================================================
-REM StartMenuOpt4_GitMenu - Git sub menu
-REM =======================================================================================================================
-:StartMenuOpt4_GitMenu
+
+REM ==========================================================================================================================================================================================================
+REM                                                                                                Git
+REM ==========================================================================================================================================================================================================
+
+
+
+REM StartMenuOpt3_GitMenu - Git Menu ======================================================================================
+:StartMenuOpt3_GitMenu
 CALL :Clear
 ECHO ===========================================================================================
-ECHO                                     Git Menu
+ECHO                                        Git Menu
 ECHO ===========================================================================================
+ECHO  Perform git commands on repos.
+ECHO  Current directory: %currentDir%
 ECHO.
 ECHO  Please select an option:
 ECHO.
-ECHO   1. Choose a subfolder repo
-ECHO   2. Perform commands on all subfolder repos
+ECHO   1. Git Settings
+ECHO   2. Select a repo on a subfolder
+ECHO   3. Perform commands on all subfolder repos
+ECHO.
+ECHO   z. Back 
+ECHO   x. Exit
+ECHO.
+SET /p input=Enter your choice (1-3, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenu
+CALL :ValidateNumber 1 3
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '3', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenu )
+IF "%input%"=="1" GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
+IF "%input%"=="2" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepo
+IF "%input%"=="3" GOTO StartMenuOpt3_GitMenuOpt3_GitMultiRepo
+GOTO StartMenuOpt3_GitMenu
+
+
+
+
+REM ==================================================================================== Git Settings =================================================================================================
+
+REM StartMenuOpt3_GitMenuOpt1_GitSettings: sub menu -----------------------------------------------------------------------
+:StartMenuOpt3_GitMenuOpt1_GitSettings
+CALL :Clear
+ECHO ===========================================================================================
+ECHO                                     Git - Settings
+ECHO ===========================================================================================
+ECHO  Git version: %gitVersion%.
+ECHO  Current directory: %currentDir%
+ECHO.
+ECHO  Please select an option:
+ECHO.
+ECHO   1. Change default repo (currently: '%defaultGitRepo%')
+ECHO   2. Reset default repo to 'develop'
 ECHO.
 ECHO   z. Back
 ECHO   x. Exit
 ECHO.
-SET /p choice=Enter your choice (1-2, z, x): 
-
-CALL :ValidateInput_Choice 1 3 "StartMenuOpt4_GitMenu" "StartMenu"
-IF "%choice%"=="1" GOTO GitMenuOpt1_Single
-IF "%choice%"=="2" GOTO GitMenuOpt2_Multi
-GOTO StartMenuOpt4_GitMenu
-
-
-
-
+SET /p input=Enter your choice (1-2, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenuOpt3_GitMenu
+CALL :ValidateNumber 1 2
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '2', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettings )
+IF "%input%"=="1" GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt1
+IF "%input%"=="2" GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt2
+GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
 
 
-REM =======================================================================================================================
-REM GitMenuOpt1_Single - Choose a subfolder repo
-REM =======================================================================================================================
-:GitMenuOpt1_Single
+REM StartMenuOpt3_GitMenuOpt1_GitSettingsOpt1: Change default repo -----------------------------------------
+:StartMenuOpt3_GitMenuOpt1_GitSettingsOpt1
 CALL :Clear
-IF EXIST "%currentDir%\.git" ( IF "%currentDir%"=="%originalWorkDir%" ( GOTO GitMenuOpt1_Single_PleaseRunOutsideRepo ) )
+SETLOCAL ENABLEDELAYEDEXPANSION
+ECHO Forbidden characters: \ / : * ? ^< ^> ^|
+ECHO Quotes " are removed.
+ECHO.
+SET /P "tempGitRepo=Enter new default repo name: "
+REM Validate repo name
+CALL :ValidateString_GitRepoName "tempGitRepo"
+IF "%result%"=="0" ( ECHO. & ECHO That's not valid. Try again. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt1 )
+ENDLOCAL & SET "defaultGitRepo=%tempGitRepo%"
+ECHO. & ECHO Default repository changed to: "%defaultGitRepo%" & PAUSE
+GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
+
+
+REM StartMenuOpt3_GitMenuOpt1_GitSettingsOpt2: Reset default repo to 'develop' -----------------------------
+:StartMenuOpt3_GitMenuOpt1_GitSettingsOpt2
+SET "defaultGitRepo=develop" & ECHO. & ECHO Default repo changed back to 'develop' & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
+
+
+
+
+
+
+
+REM ==================================================================================== Git Single Repo =================================================================================================
+
+
+REM StartMenuOpt3_GitMenuOpt2_GitSingleRepo - Choose a subfolder repo =====================================================
+:StartMenuOpt3_GitMenuOpt2_GitSingleRepo
+CALL :Clear
+IF EXIST "%currentDir%\.git" ( IF "%currentDir%"=="%originalWorkDir%" ( GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepo_PleaseRunOutsideRepo ) )
 
 SETLOCAL ENABLEDELAYEDEXPANSION
 ECHO ===========================================================================================
@@ -654,39 +821,43 @@ ECHO Scanning for Git repositories...
 SET gitRepoCount=0
 FOR /r "%currentDir%" %%d IN (.) DO ( IF EXIST "%%d\.git" ( SET /a gitRepoCount+=1 & SET "repo!gitRepoCount!=%%~fd" ) )
 REM If no repositories are found
-IF %gitRepoCount%==0 ( ECHO. & ECHO No Git repositories found in this folder or its subfolders. & ECHO. & PAUSE & ENDLOCAL & CD /d "%originalWorkDir%" & GOTO StartMenu )
-
+IF %gitRepoCount%==0 ( ECHO. & ECHO No Git repositories found in this folder or its subfolders. & ECHO. & ENDLOCAL & PAUSE & GOTO StartMenuOpt3_GitMenu )
 REM Git repositories menu
 ECHO Found %gitRepoCount% repositories:
 ECHO. 
 FOR /l %%i IN (1,1,%gitRepoCount%) DO ( ECHO   %%i. !repo%%i! )
 ECHO. 
-ECHO   z. Back to main menu
+ECHO   z. Back
 ECHO   x. Exit
 ECHO. 
+SET /p input=Choose a repository (1-%gitRepoCount%, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenuOpt3_GitMenu
+CALL :ValidateNumber 1 %gitRepoCount%
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '%gitRepoCount%', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenu )
 
-SET /p choice=Choose a repository (1-%gitRepoCount%, z, x): 
-CALL :ValidateInput_Choice 1 %gitRepoCount% "StartMenuOpt4_Git" "StartMenu"
-SET "selectedRepo=!repo%choice%!"
+SET "selectedRepo=!repo%input%!"
 ENDLOCAL & SET "selectedRepo=%selectedRepo%"
 
+REM Check if bat in same folder as repo. If it is, don't allow it
 IF EXIST "%selectedRepo%\.git" ( 
-	REM Normalize paths (remove trailing backslash except for root)
+	REM Normalize path
 	FOR %%A IN ("%selectedRepo%") DO SET "selectedRepo=%%~fA"
+	IF "%selectedRepo:~-1%"=="\" SET "selectedRepo=%selectedRepo:~0,-1%"
 	IF "%selectedRepo%"=="%originalWorkDir%" ( 
 		ECHO.
 		ECHO Performing git commands in the same directory as the bat is not allowed.
 		ECHO Please choose another repository.
-		SET "selectedRepo=" & PAUSE & GOTO StartMenuOpt4_Git
+		SET "selectedRepo=" & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepo
 	)
 )
 SET "currentDir=%selectedRepo%" & SET "selectedRepo="
 CD /d "%currentDir%"
-GOTO GitMenuOpt1_Single_RepoSelected
+GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepo_RepoSelected
 
 
-REM GitMenuOpt1_Single_PleaseRunOutsideRepo: sub menu ----------------------------------------------------------------------
-:GitMenuOpt1_Single_PleaseRunOutsideRepo
+REM StartMenuOpt3_GitMenuOpt2_GitSingleRepo_PleaseRunOutsideRepo: sub menu ----------------------------------------------------------------------
+:StartMenuOpt3_GitMenuOpt2_GitSingleRepo_PleaseRunOutsideRepo
 CALL :Clear
 ECHO ===========================================================================================
 ECHO                                           Git
@@ -707,16 +878,18 @@ ECHO  This prevents Git commands from accidentally affecting or deleting the bat
 ECHO.
 ECHO ===========================================================================================
 ECHO.
-ECHO   z. Back to main menu
+ECHO   z. Back
 ECHO   x. Exit
 ECHO.
-SET /P "choice=Press 'z' or 'x' to continue: "
-CALL :ValidateInput_BackExitChoice "StartMenuOpt4_Git" "StartMenu"
-GOTO StartMenu
+SET /P "input=Press 'z' or 'x' to continue: "
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenu
+IF /i NOT "%input%"=="z"( ECHO. & ECHO That's not a valid option. Select 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepo_PleaseRunOutsideRepo )
+GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepo_PleaseRunOutsideRepo
 
 
-REM GitMenuOpt1_Single_RepoSelected: sub menu ------------------------------------------------------------------------------
-:GitMenuOpt1_Single_RepoSelected
+REM StartMenuOpt3_GitMenuOpt2_GitSingleRepo_RepoSelected: sub menu --------------------------------------------------------
+:StartMenuOpt3_GitMenuOpt2_GitSingleRepo_RepoSelected
 CALL :Clear
 ECHO ===========================================================================================
 ECHO                                         Git
@@ -734,71 +907,21 @@ ECHO.
 ECHO   z. Back
 ECHO   x. Exit
 ECHO.
-SET /p choice=Enter your choice (1-3, z, x): 
-REM Override back option
-IF /i "%choice%"=="z" ( GOTO GitMenuOpt1_SingleOpt1_SettingsOpt1 )
-CALL :ValidateInput_Choice 1 3 "GitMenuOpt1_Single_RepoSelected" "StartMenuOpt4_Git"
-IF "%choice%"=="1" GOTO GitMenuOpt1_SingleOpt1_Settings
-IF "%choice%"=="2" GOTO GitMenuOpt1_SingleOpt2_Clean
-IF "%choice%"=="3" GOTO GitMenuOpt1_SingleOpt3_Combos
-GOTO GitMenuOpt1_Single_RepoSelected
-
-
-REM GitMenuOpt1_SingleOpt1_Settings: sub menu --------------------------------------------------------------------------------------------
-:GitMenuOpt1_SingleOpt1_Settings
-CALL :Clear
-ECHO ===========================================================================================
-ECHO                                     Git - Settings
-ECHO ===========================================================================================
-ECHO  Perform Git commands on the chosen repository.
-ECHO  Repo: %currentDir%
-ECHO.
-ECHO  Settings:
-ECHO.
-ECHO   1. Re-select repo
-ECHO   2. Change default repo (currently: '%defaultGitRepo%')
-ECHO   3. Reset default repo to 'develop'
-ECHO.
-ECHO   z. Back
-ECHO   x. Exit
-ECHO.
-SET /p choice=Enter your choice (1-3, z, x): 
-CALL :ValidateInput_Choice 1 3 "GitMenuOpt1_SingleOpt1_Settings" "GitMenuOpt1_Single_RepoSelected"
-IF "%choice%"=="1" GOTO GitMenuOpt1_SingleOpt1_SettingsOpt1
-IF "%choice%"=="2" GOTO GitMenuOpt1_SingleOpt1_SettingsOpt2
-IF "%choice%"=="3" GOTO GitMenuOpt1_SingleOpt1_SettingsOpt3
-GOTO GitMenuOpt1_SingleOpt1_Settings
-
-
-REM GitMenuOpt1_SingleOpt1_SettingsOpt1: Re-select repo ----------------------------------------------------------------------------------
-:GitMenuOpt1_SingleOpt1_SettingsOpt1
-CALL :Clear
-SETLOCAL
-FOR %%A IN ("%currentDir%\..") DO SET "parentDir=%%~fA"
-ENDLOCAL & SET "currentDir=%parentDir%"
-CD /D "%currentDir%" & GOTO StartMenuOpt4_Git
-
-REM GitMenuOpt1_SingleOpt1_SettingsOpt2: Change default repo -----------------------------------------------------------------------------
-:GitMenuOpt1_SingleOpt1_SettingsOpt2
-CALL :Clear
-SETLOCAL ENABLEDELAYEDEXPANSION
-SET /P "defaultGitRepo=Enter new default repo name: "
-REM Detect spaces by removing them and comparing 
-SET "noSpaceRepo=!defaultGitRepo: =!"
-IF NOT "!defaultGitRepo!"=="!noSpaceRepo!" ( ECHO Spaces not allowed. Please try again. & ENDLOCAL & SET "defaultGitRepo=" & PAUSE & GOTO GitMenuOpt1_SingleOpt1_SettingsOpt1 )
-REM End and export the local value to global scope
-ENDLOCAL & SET "defaultGitRepo=%defaultGitRepo%"
-CALL :ValidateInput_StringNoWildcards "defaultGitRepo" "GitMenuOpt1_SingleOpt1_SettingsOpt1" "GitMenuOpt1_Single_RepoSelected"
-GOTO GitMenuOpt1_SingleOpt1_Settings
-
-REM GitMenuOpt1_SingleOpt1_SettingsOpt3: Reset default repo to 'develop' -----------------------------------------------------------------
-:GitMenuOpt1_SingleOpt1_SettingsOpt3
-SET "defaultGitRepo=develop" & GOTO GitMenuOpt1_SingleOpt1_Settings
+SET /p input=Enter your choice (1-3, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenu
+CALL :ValidateNumber 1 3
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '3', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepo_RepoSelected )
+IF "%input%"=="1" GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
+IF "%input%"=="2" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean
+IF "%input%"=="3" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos
+GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepo_RepoSelected
 
 
 
-REM GitMenuOpt1_SingleOpt2_Clean: sub menu -----------------------------------------------------------------------------------------------
-:GitMenuOpt1_SingleOpt2_Clean
+
+REM StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean: sub menu -----------------------------------------------------------
+:StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean
 CALL :Clear
 ECHO ===========================================================================================
 ECHO                             Git - Clean and Reset commands
@@ -818,78 +941,81 @@ ECHO.
 ECHO   z. Back
 ECHO   x. Exit
 ECHO.
-SET /p choice=Enter your choice (1-6, z, x): 
-CALL :ValidateInput_Choice 1 6 "GitMenuOpt1_SingleOpt2_Clean" "GitMenuOpt1_Single_RepoSelected"
-IF "%choice%"=="1" GOTO GitMenuOpt1_SingleOpt2_CleanOpt1
-IF "%choice%"=="2" GOTO GitMenuOpt1_SingleOpt2_CleanOpt2
-IF "%choice%"=="3" GOTO GitMenuOpt1_SingleOpt2_CleanOpt3
-IF "%choice%"=="4" GOTO GitMenuOpt1_SingleOpt2_CleanOpt4
-IF "%choice%"=="5" GOTO GitMenuOpt1_SingleOpt2_CleanOpt5
-IF "%choice%"=="6" GOTO GitMenuOpt1_SingleOpt2_CleanOpt6
-GOTO GitMenuOpt1_SingleOpt2_Clean
+SET /p input=Enter your choice (1-6, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenu
+CALL :ValidateNumber 1 6
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '6', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenu )
+IF "%input%"=="1" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt1
+IF "%input%"=="2" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt2
+IF "%input%"=="3" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt3
+IF "%input%"=="4" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt4
+IF "%input%"=="5" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt5
+IF "%input%"=="6" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt6
+GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean
 
 
-REM GitMenuOpt1_SingleOpt2_CleanOpt1: Restore tracked files ------------------------------------------------------------------------------
-:GitMenuOpt1_SingleOpt2_CleanOpt1
+REM StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt1: Restore tracked files ------------------------------------------
+:StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt1
 CALL :Clear
 ECHO Restoring tracked files... & ECHO.
 git checkout .
 ECHO. & IF %ERRORLEVEL%==0 ( ECHO Command succeeded! ) ELSE ( ECHO ERROR: Command failed with exit code %ERRORLEVEL%. )
-PAUSE & GOTO GitMenuOpt1_SingleOpt2_Clean
+PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean
 
-REM GitMenuOpt1_SingleOpt2_CleanOpt2: Remove untracked files and dirs. -------------------------------------------------------------------
-:GitMenuOpt1_SingleOpt2_CleanOpt2
+REM StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt2: Remove untracked files and dirs. -------------------------------
+:StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt2
 CALL :Clear
 ECHO This will delete all untracked files and directories.
 SET /p confirm=Are you sure you want to remove untracked files and directories? y/n: 
-CALL :ValidateInput_Confirm "GitMenuOpt1_SingleOpt2_CleanOpt2" "GitMenuOpt1_SingleOpt2_Clean"
+CALL :ValidateInput_Confirm "StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt2" "StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean"
 
 ECHO Removing untracked files and directories... & ECHO.
 git clean -fd
 ECHO. & IF %ERRORLEVEL%==0 ( ECHO Command succeeded! ) ELSE ( ECHO ERROR: Command failed with exit code %ERRORLEVEL%. )
-PAUSE & GOTO GitMenuOpt1_SingleOpt2_Clean
+PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean
 
-REM GitMenuOpt1_SingleOpt2_CleanOpt3: Remove everything untracked. -----------------------------------------------------------------------
-:GitMenuOpt1_SingleOpt2_CleanOpt3
+REM StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt3: Remove everything untracked. -----------------------------------
+:StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt3
 CALL :Clear
 ECHO This will delete all untracked files and directories and also everything that is in .gitignore.
 SET /p confirm=Are you sure you want to remove EVERYTHING untracked? y/n : 
-CALL :ValidateInput_Confirm "GitMenuOpt1_SingleOpt2_CleanOpt3" "GitMenuOpt1_SingleOpt2_Clean"
+CALL :ValidateInput_Confirm "StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt3" "StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean"
 
 ECHO Removing everything untracked...
 git clean -fdx
 ECHO. & IF %ERRORLEVEL%==0 ( ECHO Command succeeded! ) ELSE ( ECHO ERROR: Command failed with exit code %ERRORLEVEL%. )
-PAUSE & GOTO GitMenuOpt1_SingleOpt2_Clean
+PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean
 
-REM GitMenuOpt1_SingleOpt2_CleanOpt4: Prune branches -------------------------------------------------------------------------------------
-:GitMenuOpt1_SingleOpt2_CleanOpt4
+REM StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt4: Prune branches -------------------------------------------------
+:StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt4
 CALL :Clear
 ECHO Prune branches... & ECHO.
 git fetch --prune
 ECHO. & IF %ERRORLEVEL%==0 ( ECHO Command succeeded! ) ELSE ( ECHO ERROR: Command failed with exit code %ERRORLEVEL%. )
-PAUSE & GOTO GitMenuOpt1_SingleOpt2_Clean
+PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean
 
-REM GitMenuOpt1_SingleOpt2_CleanOpt5: Checkout to default repo (develop) -----------------------------------------------------------------
-:GitMenuOpt1_SingleOpt2_CleanOpt5
+REM StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt5: Checkout to default repo (develop) -----------------------------
+:StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt5
 CALL :Clear
 ECHO Checking out to %defaultGitRepo%... & ECHO.
 git checkout %defaultGitRepo%
 ECHO. & IF %ERRORLEVEL%==0 ( ECHO Command succeeded! ) ELSE ( ECHO ERROR: Command failed with exit code %ERRORLEVEL%. )
-PAUSE & GOTO GitMenuOpt1_SingleOpt2_Clean
+PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean
 
-REM GitMenuOpt1_SingleOpt2_CleanOpt6: Pull -----------------------------------------------------------------------------------------------
-:GitMenuOpt1_SingleOpt2_CleanOpt6
+REM StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt6: Pull -----------------------------------------------------------
+:StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt6
 CALL :Clear
 ECHO Pulling... & ECHO.
 git pull
 ECHO. & IF %ERRORLEVEL%==0 ( ECHO Command succeeded! ) ELSE ( ECHO ERROR: Command failed with exit code %ERRORLEVEL%. )
-PAUSE & GOTO GitMenuOpt1_SingleOpt2_Clean
+PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean
 
 
 
 
-REM GitMenuOpt1_SingleOpt3_Combos: sub menu ----------------------------------------------------------------------------------------------
-:GitMenuOpt1_SingleOpt3_Combos
+REM StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos: sub menu ----------------------------------------------------------
+:StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos
 CALL :Clear
 ECHO ===========================================================================================
 ECHO                                    Git - Combos
@@ -904,15 +1030,22 @@ ECHO.
 ECHO   z. Back
 ECHO   x. Exit
 ECHO.
-SET /p choice=Enter your choice (1-1, z, x): 
-CALL :ValidateInput_Choice 1 1 "GitMenuOpt1_SingleOpt3_Combos" "GitMenuOpt1_Single_RepoSelected"
-IF "%choice%"=="1" GOTO GitMenuOpt1_SingleOpt3_CombosOpt1
-GOTO GitMenuOpt1_SingleOpt3_Combos
+SET /p input=Enter your choice (1, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenu
+CALL :ValidateNumber 1 2
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '2', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenu )
 
 
 
-REM GitMenuOpt1_SingleOpt3_CombosOpt1: Combo - Reset -------------------------------------------------------------------------------------
-:GitMenuOpt1_SingleOpt3_CombosOpt1
+CALL :ValidateInput_Choice 1 1 "StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos" "StartMenuOpt3_GitMenuOpt2_GitSingleRepo_RepoSelected"
+IF "%input%"=="1" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_CombosOpt1
+GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos
+
+
+
+REM StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_CombosOpt1: Combo - Reset -------------------------------------------------
+:StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_CombosOpt1
 CALL :Clear
 ECHO Combo - Reset branch 
 ECHO This will perform several git commands:
@@ -923,45 +1056,92 @@ ECHO  3) Checkout to develop;               'git checkout develop'
 ECHO  4) Pull;                              'git pull'
 ECHO  5) Prune branches.                    'git fetch --prune'
 ECHO.
-SET /p confirm=Are you sure you want to proceed? y/n : 
-CALL :ValidateInput_Confirm "GitMenuOpt1_SingleOpt3_CombosOpt1" "GitMenuOpt1_SingleOpt3_Combos"
+SET /p input=Are you sure you want to proceed? y/n : 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenu
+CALL :ValidateNumber 1 2
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '2', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenu )
+
+
+
+
+
+CALL :ValidateInput_Confirm "StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_CombosOpt1" "StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos"
 ECHO. & ECHO Running full git reset sequence... & ECHO.
 
 REM 1. Restore tracked files
 ECHO Step 1: Restore tracked files 'git checkout .'
 git checkout .
-ECHO. & IF errorlevel 1 ( ECHO ERROR: 'git checkout .' failed with exit code %ERRORLEVEL%. & PAUSE & GOTO GitMenuOpt1_SingleOpt3_Combos )
+ECHO. & IF errorlevel 1 ( ECHO ERROR: 'git checkout .' failed with exit code %ERRORLEVEL%. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos )
 
 REM 2. Remove untracked files
 ECHO Step 2: Remove untracked files 'git clean -fd'
 git clean -fd
-ECHO. & IF errorlevel 1 ( ECHO ERROR: 'git clean -fd' failed with exit code %ERRORLEVEL%. & PAUSE & GOTO GitMenuOpt1_SingleOpt3_Combos )
+ECHO. & IF errorlevel 1 ( ECHO ERROR: 'git clean -fd' failed with exit code %ERRORLEVEL%. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos )
 
 REM 3. Checkout to develop
 ECHO Step 3: Checkout to develop -git checkout develop
 git checkout develop
-ECHO. & IF errorlevel 1 ( ECHO ERROR: 'git checkout develop' failed with exit code %ERRORLEVEL%. & PAUSE & GOTO GitMenuOpt1_SingleOpt3_Combos )
+ECHO. & IF errorlevel 1 ( ECHO ERROR: 'git checkout develop' failed with exit code %ERRORLEVEL%. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos )
 
 REM 4. Pull
 ECHO Step 4: Pull -git pull
 git pull
-ECHO. & IF errorlevel 1 ( ECHO ERROR: 'git pull' failed with exit code %ERRORLEVEL%. & PAUSE & GOTO GitMenuOpt1_SingleOpt3_Combos )
+ECHO. & IF errorlevel 1 ( ECHO ERROR: 'git pull' failed with exit code %ERRORLEVEL%. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos )
 
 REM 5. Prune branches
 ECHO Step 5: Prune branches -git fetch --prune
 git fetch --prune
-ECHO. & IF errorlevel 1 ( ECHO ERROR: 'git fetch --prune' failed with exit code %ERRORLEVEL%. & PAUSE & GOTO GitMenuOpt1_SingleOpt3_Combos )
-ECHO. & ECHO All commands completed. & PAUSE & GOTO GitMenuOpt1_SingleOpt3_Combos
+ECHO. & IF errorlevel 1 ( ECHO ERROR: 'git fetch --prune' failed with exit code %ERRORLEVEL%. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos )
+ECHO. & ECHO All commands completed. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos
 
 
 
 
+
+REM ==================================================================================== Git Multi Repo =================================================================================================
+
+REM StartMenuOpt3_GitMenuOpt3_GitMultiRepo: Git multi repo menu -----------------------------------------------------------
+:StartMenuOpt3_GitMenuOpt3_GitMultiRepo
+CALL :Clear
+ECHO ===========================================================================================
+ECHO                                         Git 
+ECHO ===========================================================================================
+ECHO  Git version: %gitVersion%.
+ECHO  Repo: %currentDir%
+ECHO.
+ECHO  Please select an option:
+ECHO.
+ECHO   1. Comming soon
+ECHO   2. Comming soon
+ECHO.
+ECHO   z. Back
+ECHO   x. Exit
+ECHO.
+SET /p input=Enter your choice (1-2, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenuOpt3_GitMenu
+CALL :ValidateNumber 1 2
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '2', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt3_GitMultiRepo )
+IF "%input%"=="1" GOTO StartMenuOpt3_GitMenuOpt3_GitMultiRepo
+IF "%input%"=="2" GOTO StartMenuOpt3_GitMenuOpt3_GitMultiRepo
+GOTO StartMenuOpt3_GitMenuOpt3_GitMultiRepo
+
+
+
+
+
+
+
+REM ==========================================================================================================================================================================================================
+REM                                                                                            Placeholder
+REM ==========================================================================================================================================================================================================
 
 
 REM =======================================================================================================================
 REM StartMenuOpt5_Placeholder - Placeholder
-REM =======================================================================================================================
-:StartMenuOpt5_Placeholder
+REM StartMenuOpt4_Placeholder
+:StartMenuOpt4_Placeholder
 CALL :Clear 
 ECHO ===========================================================================================
 ECHO                                   Placeholder
@@ -974,27 +1154,30 @@ ECHO   1. Go to something
 ECHO   2. Did I mention that this is just a placeholder?
 ECHO   3. Bla bla bla
 ECHO.
-ECHO   z. Back to main menu
+ECHO   z. Back
 ECHO   x. Exit
 ECHO.
-SET /p choice=Enter your choice (1-3, z, x): 
-CALL :ValidateInput_Choice 1 3 "StartMenuOpt5_Placeholder" "StartMenu"
-IF "%choice%"=="1" GOTO PlaceholderOpt1
-IF "%choice%"=="2" GOTO PlaceholderOpt2
-IF "%choice%"=="3" GOTO PlaceholderOpt3
-GOTO StartMenuOpt1_Clear
+SET /p input=Enter your choice (1-3, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenu
+CALL :ValidateNumber 1 3
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '3', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt4_Placeholder ) 
+IF "%input%"=="1" GOTO StartMenuOpt4_PlaceholderOpt1
+IF "%input%"=="2" GOTO StartMenuOpt4_PlaceholderOpt2
+IF "%input%"=="3" GOTO StartMenuOpt4_PlaceholderOpt3
+GOTO StartMenuOpt4_Placeholder
 
-:PlaceholderOpt1
+:StartMenuOpt4_PlaceholderOpt1
 CALL :Clear
-ECHO Yup, you got it... & PAUSE & GOTO StartMenuOpt5_Placeholder
+ECHO Yup, you got it... & PAUSE & GOTO StartMenuOpt4_Placeholder
 
-:PlaceholderOpt2
+:StartMenuOpt4_PlaceholderOpt2
 CALL :Clear
-ECHO Almost!... & PAUSE & GOTO StartMenuOpt5_Placeholder
+ECHO Almost!... & PAUSE & GOTO StartMenuOpt4_Placeholder
 
-:PlaceholderOpt3
+:StartMenuOpt4_PlaceholderOpt3
 CALL :Clear
-ECHO Your mamma is so fat... & PAUSE & GOTO StartMenuOpt5_Placeholder
+ECHO Your mamma is so fat... & PAUSE & GOTO StartMenuOpt4_Placeholder
 
 
 
@@ -1007,172 +1190,212 @@ ECHO Your mamma is so fat... & PAUSE & GOTO StartMenuOpt5_Placeholder
 
 
 
-REM =======================================================================================================================
-REM   Subroutines
-REM =======================================================================================================================
+
+
+
+REM   Subroutines =========================================================================================================
 
 
 REM General ---------------------------------------------------------------------------------------------------------------
 
 :Clear
-REM summary:
-REM   clears user input and console
-REM usage example:
-REM   CALL :Clear
-
-CLS & SET "choice=" & SET "confirm="
-EXIT /B
-
+REM summary: clears console and common use variables and ends all locals
+REM   usage: CALL :Clear
+CALL :EndAllSetLocal & CLS & SET "input=" &  SET "result=0" & EXIT /B
 
 :Goodbye
-REM summary:
-REM   prints goodbye and exits
-REM usage example:
-REM   CALL :Goodbye
-
-ECHO. & ECHO Exiting... Goodbye! & PAUSE
-EXIT
-
+REM summary: prints goodbye and exits
+REM   usage: CALL :Goodbye
+ECHO. & ECHO Exiting... Goodbye! & PAUSE & EXIT
 
 :EndAllSetLocal
-REM summary:
-REM   tries to end all local scopes, harmless if none
-REM usage example:
-REM   CALL :EndAllSetLocal
-FOR /L %%A IN (1,1,50) DO ENDLOCAL
-EXIT /B
+REM summary: tries to end all local scopes, harmless if none
+REM   usage: CALL :EndAllSetLocal
+FOR /L %%A IN (1,1,50) DO ENDLOCAL & EXIT /B
 
 
-REM Validate user input ---------------------------------------------------------------------------------------------------
 
-:ValidateInput_Choice
-REM summary:
-REM   validates user input on menus
-REM params:
-REM   %~1 = min valid number
-REM   %~2 = max valid number
-REM   %~3 = current label to return on invalid input
-REM   %~4 = label to go back to
-REM usage example:
-REM   CALL :ValidateInput_Choice 1 %gitRepoCount% "CurrentLabel" "BackToMenuLabel"
+REM Validations -----------------------------------------------------------------------------------------------------------
 
-CALL :EndAllSetLocal
-REM Exit option
-IF /i "%choice%"=="x" CALL :Goodbye
-REM Back option
-IF /i "%choice%"=="z" ( SET "choice=" & GOTO %~4 )
+:ValidateNumber
+REM Summary.: validates a number between param values
+REM Param %1: min valid number
+REM Param %2: max valid number
+REM Usage...: CALL :ValidateNumber 1 5 
+REM returns:
+REM   %result% with 0 - invalid, not a number between %~1 and %~2
+REM   %result% with 1 - valid number
+
+SET "result=0"
 REM Empty validation
-IF "%choice%"=="" ( ECHO. & ECHO That's not a valid option. Use a number between %~1 and %~2, 'z' to go back, or 'x' to quit. & PAUSE & GOTO %~3 ) 
+IF "%input%"=="" ( EXIT /B ) 
 REM Numeric validation
-FOR /f "delims=0123456789" %%A IN ("%choice%") DO ( ECHO. & ECHO That's not a valid option. Use a number between %~1 and %~2, 'z' to go back, or 'x' to quit. & SET "choice=" & PAUSE & GOTO %~3 )
+FOR /f "delims=0123456789" %%A IN ("%input%") DO ( EXIT /B )
 REM less than %~1 validation
-IF %choice% LSS %~1 ( ECHO. & ECHO That's not a valid option. Use a number between %~1 and %~2, 'z' to go back, or 'x' to quit. & SET "choice=" & PAUSE & GOTO %~3 )
+IF %input% LSS %~1 ( EXIT /B )
 REM Greater than %~2 validation
-IF %choice% GTR %~2 ( ECHO. & ECHO That's not a valid option. Use a number between %~1 and %~2, 'z' to go back, or 'x' to quit. & SET "choice=" & PAUSE & GOTO %~3 )
-REM Valid choice continues ( %choice% not cleared )
-EXIT /B
+IF %input% GTR %~2 ( EXIT /B )
+REM Valid number, set ok result and continue
+SET "result=1" & EXIT /B
 
 
-:ValidateInput_Confirm
-REM summary:
-REM   validates user input on confirm yes or no questions
-REM   Exit and Back options are not mentioned to user
-REM params:
-REM   %~1 = current label to return on invalid input
-REM   %~2 = label to go back to
-REM usage example:
-REM   CALL :ValidateInput_Confirm "CurrentLabel" "BackToMenuLabel"
+:ValidateString_NoWildcards
+REM Summary..: Validates input string: no empty value or wildcards allowed
+REM Param %1: variable name (e.g., myStringToValidate) <-- IMPORTANT: pass the name, not %value%
+REM Usage...: CALL :ValidateString_NoWildcards "myStringToValidate"
+REM returns.:
+REM   %result% with 0 - invalid string, either empty or with wildcards '*' or '?'
+REM   %result% with 1 - valid string
 
-CALL :EndAllSetLocal
-REM Exit option
-IF /i "%confirm%"=="x" CALL :Goodbye
-REM Back option
-IF /i "%confirm%"=="z"  ( SET "confirm=" & GOTO %~2 )
-REM No option
-IF /i "%confirm%"=="n" ( ECHO. & ECHO Canceled. Returning... & SET "confirm=" & PAUSE & GOTO %~2 )
-REM Everything else but y
-IF /i NOT "%confirm%"=="y" ( ECHO. & ECHO Invalid option. Possible options: y/n & SET "confirm=" & PAUSE & GOTO %~1 )
-REM Yes option continues ( %confirm% not cleared )
-EXIT /B
-
-
-:ValidateInput_BackExitChoice
-REM summary:
-REM   validates user input on menus with only back and exit
-REM params:
-REM   %~1 = current label to return on invalid input
-REM   %~2 = label to go back to
-REM usage example:
-REM   CALL :ValidateInput_BackExitChoice "CurrentLabel" "BackToMenuLabel"
-
-CALL :EndAllSetLocal
-REM Exit option
-IF /i "%choice%"=="x" CALL :Goodbye
-REM Back option
-IF /i "%choice%"=="z" ( SET "choice=" & GOTO %~2 )
-IF /i NOT "%choice%"=="z" ( ECHO. & ECHO That's not a valid option. 'z' to go back, or 'x' to quit. & PAUSE & GOTO %~1 ) 
-EXIT /B
-
-
-:ValidateInput_StringNoWildcards
-REM Summary:
-REM   Validates user input string: no wildcards allowed
-REM Params:
-REM   %1 = variable name (e.g., customFolderToClear) <-- IMPORTANT: pass the name, not %value%
-REM   %2 = current label to return on invalid input
-REM   %3 = label to go back to
-REM Usage:
-REM   CALL :ValidateInput_StringNoWildcards "customFolderToClear" "CurrentLabel" "BackToMenuLabel"
-REM Extra details:
+SET "result=0" 
+SETLOCAL ENABLEDELAYEDEXPANSION
+REM Get value of the variable
 REM   SET "input=!%~1!" gets the value of the variable whose name was passed in (%1).
 REM   We pass the name (not the value) so we can later clear or update it after ENDLOCAL.
-
-SETLOCAL ENABLEDELAYEDEXPANSION
-
-REM Get value of the variable
 SET "input=!%~1!"
-REM Strip surrounding quotes if user typed them
+REM Strip surrounding quotes if exist
 SET "input=!input:"=!"
-
-REM Exit option
-IF /i "!input!"=="x" CALL :Goodbye
-REM Back option
-IF /i "!input!"=="z" ( ENDLOCAL & SET "%~1=" & GOTO %~2 )
 REM Empty validation
-IF "!input!"=="" ( ECHO. & ECHO Nothing entered. Please try again. & ENDLOCAL & PAUSE & GOTO %~2 ) 
+IF "!input!"=="" ( EXIT /B ) 
 REM Check wildcards
 ECHO.!input! | FINDSTR "\*" >nul
-IF !ERRORLEVEL! EQU 0 ( ECHO Wildcard "*" detected. Please try again. & ENDLOCAL & SET "%~1=" & PAUSE & GOTO %~2 )
+IF !ERRORLEVEL! EQU 0 ( EXIT /B )
 ECHO.!input! | FINDSTR "\?" >nul
-IF !ERRORLEVEL! EQU 0 ( ECHO Wildcard "?" detected. Please try again. & ENDLOCAL & SET "%~1=" & PAUSE & GOTO %~2 )
-
-REM Valid input, keep value
-ENDLOCAL & SET "%~1=%input%"
+IF !ERRORLEVEL! EQU 0 ( EXIT /B )
+REM Valid string, keep value
+ENDLOCAL & ( SET "%~1=%input%" & SET "result=1" )
 EXIT /B
+
+
+:ValidateString_WindowsFolderName
+REM Summary..: Validates if a string is a valid Windows folder name. Double-quotes are just removed.
+REM Param %1.: variable name (e.g., folderNameVar) <-- pass the variable name, not its value
+REM Returns..:
+REM   %result% = 0 → invalid (empty or has forbidden chars)
+REM   %result% = 1 → valid
+REM Usage.....: CALL :ValidateString_WindowsFolderName "folderNameVar"
+
+SET "result=0"
+SETLOCAL ENABLEDELAYEDEXPANSION
+REM Get actual value
+SET "input=!%~1!"
+SET "input=!input:"=!"
+REM Empty or reserved dots validation
+IF "!input!"=="" ( ENDLOCAL & EXIT /B )
+IF "!input!"=="."  ( ENDLOCAL & EXIT /B )
+IF "!input!"==".." ( ENDLOCAL & EXIT /B )
+REM Forbidden characters: \ / : * ? " < > |
+REM Check forbidden characters - double-quote already removed
+ECHO(!input!| FINDSTR /R "[\\/:*?<>|]" >NUL
+IF !ERRORLEVEL! EQU 0  ( ENDLOCAL & EXIT /B )
+REM Names cannot end with a space or a dot
+IF "!input:~-1!"==" " ( ENDLOCAL & EXIT /B )
+IF "!input:~-1!"=="." ( ENDLOCAL & EXIT /B )
+REM Valid string, pass it back
+ENDLOCAL & ( SET "%~1=%input%" & SET "result=1" )
+EXIT /B
+
+
+:ValidateString_GitRepoName
+REM Summary..: Validates if a string is a valid Git repo name. Double-quotes are just removed.
+REM Param %1.: variable name (e.g., someGitRepoName ) <-- pass the variable name, not its value
+REM Returns..:
+REM   %result% = 0 → invalid (empty or has forbidden chars)
+REM   %result% = 1 → valid
+REM Usage.....: CALL :ValidateString_GitRepoName "someGitRepoName"
+
+SET "result=0"
+SETLOCAL ENABLEDELAYEDEXPANSION
+REM Get actual value
+SET "input=!%~1!"
+SET "input=!input:"=!"
+REM Detect spaces by removing them and comparing 
+SET "inputNoSpaces=!input: =!"
+IF NOT "!inputNoSpaces!"=="!input!" ( ECHO. & ECHO Spaces not allowed. Please try again. & ENDLOCAL & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt1 )
+REM Empty or reserved dots validation
+IF "!input!"=="" ( ENDLOCAL & EXIT /B )
+IF "!input!"=="."  ( ENDLOCAL & EXIT /B )
+IF "!input!"==".." ( ENDLOCAL & EXIT /B )
+REM Forbidden characters: \ : * ? " < > |
+REM Check forbidden characters - double-quote already removed
+ECHO(!input!| FINDSTR /R "[\\:*?<>|]" >NUL
+IF !ERRORLEVEL! EQU 0  ( ENDLOCAL & EXIT /B )
+REM Names cannot end with a space or a dot
+IF "!input:~-1!"==" " ( ENDLOCAL & EXIT /B )
+IF "!input:~-1!"=="." ( ENDLOCAL & EXIT /B )
+REM Valid string, pass it back
+ENDLOCAL & ( SET "%~1=%input%" & SET "result=1" )
+EXIT /B
+
+
+
+
+
+REM Handle Strings --------------------------------------------------------------------------------------------------------
+	
+
+:TrimString
+REM Summary..: Trims leading and trailing spaces from a string (handles quoted values).
+REM Param %1.: variable name (e.g., myVar)
+REM Returns..: updates the variable in place
+REM Usage.....: CALL :TrimString "myVar"
+
+SETLOCAL ENABLEDELAYEDEXPANSION
+SET "str=!%~1!"
+REM Remove surrounding quotes, if any
+SET "str=!str:"=!"
+REM Use FOR to trim leading/trailing spaces
+FOR /F "tokens=* delims= " %%A IN ("!str!") DO SET "str=%%A"
+ENDLOCAL & SET "%~1=%str%"
+EXIT /B
+
+
+:RemoveAllSpaces
+REM Summary..: Removes all spaces from a variable's value.
+REM Param %1.: variable name (e.g., myVar)  <-- pass the variable name, not its value
+REM Returns..: updates the variable in place (same name)
+REM Usage.....: CALL :RemoveAllSpaces "myVar"
+
+SETLOCAL ENABLEDELAYEDEXPANSION
+SET "str=!%~1!"
+REM Remove surrounding quotes, if any
+SET "str=!str:"=!"
+REM Remove all spaces
+SET "str=!str: =!"
+ENDLOCAL & SET "%~1=%str%"
+EXIT /B
+
+
+
+
+REM  ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	
+REM Build timestamp (YYYYMMDD-HHMM)
+
+:CreateTimestamp
+FOR /F "tokens=1-4 delims=/-. " %%a IN ("%DATE%") DO ( SET "Day=%%a" & SET "Month=%%b" & SET "Year=%%c" )
+FOR /F "tokens=1-2 delims=:." %%a IN ("%TIME%") DO ( SET "Hour=%%a" & SET "Min=%%b" )
+SET "Hour=%Hour: =0%" & SET "Min=%Min: =0%"
+SET "TimeStamp=%Year%%Month%%Day%-%Hour%%Min%"
+EXIT /B
+
+
+
+
 
 
 REM Clear and Delete ------------------------------------------------------------------------------------------------------
 	
 :DeleteFolderRecurs
-REM summary:
-REM   deletes recursively all folders with specified name, starting from the work dir. to all of its subfolders
-REM   doesn't support folder names with spaces
-REM params:
-REM   %~1 = folder name
-REM usage example:
-REM   CALL :DeleteFolderRecurs obj
-
+REM Summary.: deletes recursively all folders with specified name, starting from the work dir. to all of its subfolders
+REM Param %1: folder name
+REM Usage...: CALL :DeleteFolderRecurs obj
 ECHO Cleaning %~1 folders recursively...
 SETLOCAL ENABLEDELAYEDEXPANSION
-
 FOR /d /r "%currentDir%" %%d IN (%~1) DO (
     IF EXIST "%%d" (
         RD /s /q "%%d"
-        IF EXIST "%%d" (
-            ECHO  -- Error: could not completely delete "%%d"
-        ) ELSE (
-            ECHO  -- Deleted "%%d"
-        )
+        IF EXIST "%%d" ( ECHO  -- Error: could not completely delete "%%d" ) ELSE ( ECHO  -- Deleted "%%d" )
     )
 )
 ENDLOCAL
@@ -1182,32 +1405,21 @@ EXIT /B
 REM Windows Firewall ------------------------------------------------------------------------------------------------------
 
 :FirewallAddBlockRules
-REM summary:
-REM   Recursively searches for files with the given extensions and adds inbound/outbound block rules in Windows Firewall
-REM params:
-REM   %1 = list of file extensions separated by spaces and no quotes (e.g. *.exe *.dll)
-REM usage example:
-REM   CALL :FirewallAddBlockRules *.exe *.dll
-
+REM Summary..: Recursively searches for files with the given extensions and adds inbound/outbound block rules in Windows Firewall
+REM Param %~1: list of file extensions separated by spaces and no quotes (e.g. *.exe *.dll)
+REM Param %~2: label to go back to on error
+REM Usage....: CALL :FirewallAddBlockRules *.exe *.dll "FireWallMenu"
 ECHO Blocking all web traffic for %* files...
 SETLOCAL ENABLEDELAYEDEXPANSION
-
 FOR %%f IN (%*) DO (
     FOR /r "%currentDir%" %%x IN (%%f) DO (
         ECHO Adding block rules for: %%x
         REM Add outbound rule
         netsh advfirewall firewall add rule name="Block %%~nx" dir=out program="%%x" action=block >nul 2>&1
-        IF !ERRORLEVEL! NEQ 0 (
-            ECHO ERROR: Failed to add outbound rule for "%%~nx"
-            PAUSE & ENDLOCAL & GOTO StartMenuOpt3_Firewall
-        )
+        IF !ERRORLEVEL! NEQ 0 ( ECHO ERROR: Failed to add outbound rule for "%%~nx" & PAUSE & ENDLOCAL & GOTO %~2 )
         REM Add inbound rule
         netsh advfirewall firewall add rule name="Block %%~nx" dir=in program="%%x" action=block >nul 2>&1
-        IF !ERRORLEVEL! NEQ 0 (
-            ECHO ERROR: Failed to add inbound rule for "%%~nx"
-            PAUSE & ENDLOCAL & GOTO StartMenuOpt3_Firewall
-        )
-
+        IF !ERRORLEVEL! NEQ 0 ( ECHO ERROR: Failed to add inbound rule for "%%~nx" & PAUSE & ENDLOCAL & GOTO %~2 )
         ECHO Blocked: %%~nx
     )
 )
@@ -1216,16 +1428,11 @@ GOTO :EOF
 
 
 :FirewallRemoveBlockRules
-REM summary:
-REM   Recursively searches for files with the given extensions and removes any inbound/outbound block rules in Windows Firewall
-REM params:
-REM   %1 = list of file extensions separated by spaces and no quotes (e.g. *.exe *.dll)
-REM usage example:
-REM   CALL :FirewallRemoveBlockRules *.exe *.dll
-
+REM Summary.: Recursively searches for files with the given extensions and removes any inbound/outbound block rules in Windows Firewall
+REM Param %1: list of file extensions separated by spaces and no quotes (e.g. *.exe *.dll)
+REM Usage...: CALL :FirewallRemoveBlockRules *.exe *.dll
 ECHO Removing all web traffic block rules for %1 files...
 SETLOCAL ENABLEDELAYEDEXPANSION
-
 FOR %%f IN (%*) DO (
     FOR /r "%currentDir%" %%x IN (%%f) DO (
         ECHO Removing block rules for: %%x
@@ -1235,12 +1442,20 @@ FOR %%f IN (%*) DO (
         REM Remove inbound rule
         netsh advfirewall firewall delete rule name="Block %%~nx" program="%%x" dir=in >nul 2>&1
         IF !ERRORLEVEL! NEQ 0 ( ECHO WARNING: Failed to remove inbound rule for "%%~nxf". May not exist. )
-
         ECHO Removed: %%~nx
     )
 )
 ENDLOCAL
 GOTO :EOF
+
+
+
+
+
+
+
+
+
 
 
 
