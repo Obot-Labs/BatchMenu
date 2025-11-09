@@ -1,5 +1,77 @@
 @ECHO off
 
+
+REM  Menu Map
+REM
+REM  StartMenu ==
+REM  StartMenuOpt0_Settings ==
+REM  StartMenuOpt0_SettingsOpt1_WorkDir ==
+REM  StartMenuOpt0_SettingsOpt1_WorkDirOpt1 --
+REM  StartMenuOpt0_SettingsOpt1_WorkDirOpt2 --
+REM  StartMenuOpt0_SettingsOpt1_WorkDirOpt3 --
+REM  StartMenuOpt0_SettingsOpt1_WorkDirOpt4 --
+REM  StartMenuOpt1_FoldersFilesManage ==
+REM  StartMenuOpt1_FoldersFilesManageOpt1_Delete ==
+REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt1 --
+REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt2 --
+REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt3 --
+REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt4 --
+REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt5 --
+REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt6 --
+REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt7 --
+REM  StartMenuOpt1_FoldersFilesManageOpt2_Backup ==
+REM  StartMenuOpt1_FoldersFilesManageOpt2_BackupOpt1 --
+REM  StartMenuOpt1_FoldersFilesManageOpt2_BackupOpt2 --
+REM  StartMenuOpt2_WindowsHelpers ==
+REM  StartMenuOpt2_WindowsHelpersOpt1_Firewall ==
+REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt1 --
+REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt2 --
+REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt3 --
+REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt4 --
+REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt5 --
+REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt6 --
+REM  StartMenuOpt2_WindowsHelpersOpt2_WinEnv ==
+REM  StartMenuOpt3_GitMenu ==
+REM  StartMenuOpt3_GitMenuOpt1_GitSettings ==
+REM  StartMenuOpt3_GitMenuOpt1_GitSettingsOpt1 --
+REM  StartMenuOpt3_GitMenuOpt1_GitSettingsOpt2 --
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepo ==
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepo_PleaseRunOutsideRepo --
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepo_RepoSelected ==
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt1_Clean --
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Combos --
+REM  StartMenuOpt3_GitMenuOpt3_GitMultiRepo ==
+REM  StartMenuOpt4_Placeholder ==
+REM
+
+
+REM  Subroutines
+REM  
+REM  --general
+REM  CALL :Clear
+REM  CALL :Goodbye
+REM  CALL :EndAllSetLocal
+REM  --validations
+REM  CALL :ValidateNumber 1 5   -> %result% : 0 nok / 1 ok
+REM  CALL :ValidateString_NoWildcards "myStringToValidate"
+REM  CALL :ValidateString_WindowsFolderName "myStringToValidate"
+REM  CALL :ValidateString_GitRepoName "someGitRepoName"
+REM  CALL :ValidateString_NoSpacesOrSymbols "someName"
+REM  -- string handeling
+REM  CALL :TrimString "myVar"
+REM  CALL :RemoveAllSpaces "myVar"
+REM  -- other
+REM  CALL :DeleteFolderRecurs obj
+REM  CALL :FirewallAddBlockRules *.exe *.dll "FireWallMenu"
+REM  CALL :FirewallRemoveBlockRules *.exe *.dll
+
+
+
+
+
+
+
+
 REM =======================================================================================================================
 REM Status Check - Set global vars
 REM =======================================================================================================================
@@ -19,7 +91,7 @@ SET "input="
 REM Some subroutines boolean result: 0 false 1 true
 SET "result=0"
 
-REM ============== GIT vars ==============
+REM ============== GIT vars ================
 REM Check if Git tool is available and get version
 SET "isGitAvailable=0"
 SET "gitVersion="
@@ -34,7 +106,7 @@ SET "isNugetAvailable=0"
 SET "nugetVersion="
 FOR /F "tokens=2 delims= " %%N IN ('nuget help 2^>nul ^| findstr /R "^NuGet"') DO ( SET "nugetVersion=%%N" & SET "isNugetAvailable=1" )
 
-REM ============== npm vars ==============
+REM ============== npm vars ================
 REM Check if npm tool is available and get version
 SET "isNpmAvailable=0"
 SET "npmVersion="
@@ -57,9 +129,9 @@ ECHO   0. Settings
 ECHO   1. Folders and Files Management
 ECHO   2. Windows Helpers
 IF "%isGitAvailable%"=="1" (
-    ECHO   3. Git Menu
+    ECHO   3. Git     
 ) ELSE (
-    ECHO   3. Git Menu   [Unavailable: git tool not installed or not found]
+    ECHO   3. Git        [Unavailable: git tool not installed or not found]
 )
 ECHO   4. Placeholder
 ECHO.
@@ -588,7 +660,6 @@ REM                                                                             
 REM ==========================================================================================================================================================================================================
 
 
-
 REM StartMenuOpt2_WindowsHelpers - Windows Helpers ========================================================================
 :StartMenuOpt2_WindowsHelpers
 CALL :Clear
@@ -605,18 +676,18 @@ IF "%isAdmin%"=="1" (
 ) ELSE (
     ECHO   1. Windows Firewall rules   [Unavailable: needs administrator privileges]
 )
-ECHO   2. Windows environment      [Unavailable: Comming soon]
+ECHO   2. Windows Environment
 ECHO.
 ECHO   z. Back 
 ECHO   x. Exit
 ECHO.
-SET /p input=Enter your choice (1, z, x): 
+SET /p input=Enter your choice (1-2, z, x): 
 IF /i "%input%"=="x" CALL :Goodbye
 IF /i "%input%"=="z" GOTO StartMenu
 CALL :ValidateNumber 1 2
-IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select number '1', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt2_WindowsHelpers )
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option.  Select a number between '1' and '2', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt2_WindowsHelpers )
 IF "%input%"=="1" ( IF "%isAdmin%"=="1" ( GOTO StartMenuOpt2_WindowsHelpersOpt1_Firewall ) ELSE ( ECHO. & ECHO Option unavailable. Administrator privileges required. & ECHO. & PAUSE & GOTO StartMenuOpt2_WindowsHelpers ) )
-IF "%input%"=="2" ECHO. & ECHO Comming soon!! & ECHO. & PAUSE & GOTO StartMenuOpt2_WindowsHelpers 
+IF "%input%"=="2" GOTO StartMenuOpt2_WindowsHelpersOpt2_WinEnv
 GOTO StartMenuOpt2_WindowsHelpers
 
 
@@ -699,6 +770,86 @@ CALL :Clear
 CALL :FirewallRemoveBlockRules *.exe *.dll *.com *.scr *.cpl *.ocx *.sys
 ECHO. & ECHO Done! & PAUSE & GOTO StartMenuOpt3_Firewall
 
+
+
+
+
+REM StartMenuOpt2_WindowsHelpersOpt2_WinEnv - Windows Environment =========================================================
+:StartMenuOpt2_WindowsHelpersOpt2_WinEnv
+CALL :Clear
+ECHO ===========================================================================================
+ECHO                                  Windows Environment
+ECHO ===========================================================================================
+ECHO  Windows Environment Variables helper commands.
+ECHO  Current directory:  %currentDir%
+ECHO.
+ECHO  Please select an option:
+ECHO.
+ECHO   -- List Environment Variables --
+ECHO   1. All
+ECHO   2. Filtered by current directory
+ECHO.
+ECHO   -- Set Environment Variables ---
+ECHO   3. Set current dir. as env. variable
+ECHO.
+ECHO   z. Back
+ECHO   x. Exit
+ECHO.
+SET /p input=Enter your choice (1-3, z, x): 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenuOpt2_WindowsHelpers
+CALL :ValidateNumber 1 3
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '3', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt2_WindowsHelpersOpt2_WinEnv )
+IF "%input%"=="1" GOTO StartMenuOpt2_WindowsHelpersOpt2_WinEnvOpt1
+IF "%input%"=="2" GOTO StartMenuOpt2_WindowsHelpersOpt2_WinEnvOpt2
+IF "%input%"=="3" GOTO StartMenuOpt2_WindowsHelpersOpt2_WinEnvOpt3
+GOTO StartMenuOpt2_WindowsHelpersOpt2_WinEnv
+
+
+REM StartMenuOpt2_WindowsHelpersOpt2_WinEnvOpt1: List all environment variables -------------------------------------------
+:StartMenuOpt2_WindowsHelpersOpt2_WinEnvOpt1
+CALL :Clear
+ECHO Listing all environment variables... & ECHO Note that some vars from the current bat session will appear. & ECHO.
+set | more
+ECHO. & ECHO Done.
+PAUSE
+GOTO StartMenuOpt2_WindowsHelpersOpt2_WinEnv
+
+
+REM StartMenuOpt2_WindowsHelpersOpt2_WinEnvOpt2: List variables containing currentDir -------------------------------------
+:StartMenuOpt2_WindowsHelpersOpt2_WinEnvOpt2
+CALL :Clear
+ECHO Listing environment variables that reference the current directory... & ECHO Note that some vars from the current bat session will appear. & ECHO.
+ECHO Current directory: %currentDir%
+ECHO.
+set | find /I "%currentDir%"
+ECHO.
+IF %ERRORLEVEL%==0 (
+    ECHO. & ECHO Done.
+) ELSE (
+    ECHO. & ECHO No environment variables contain the current directory path.
+)
+PAUSE
+GOTO StartMenuOpt2_WindowsHelpersOpt2_WinEnv
+
+
+REM StartMenuOpt2_WindowsHelpersOpt2_WinEnvOpt3: Set current directory as environment variable ----------------------------
+:StartMenuOpt2_WindowsHelpersOpt2_WinEnvOpt3
+CALL :Clear
+ECHO This will set the current directory as a Windows environment variable.
+ECHO.
+ECHO NOTE: This change will not affect the current session.
+ECHO       You will need to restart the script or open a new Command Prompt.
+ECHO.
+SET /p someName=Enter a name for the environment variable (no spaces, e.g. MYWORKDIR): 
+CALL :ValidateString_NoSpacesOrSymbols "someName"
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Enter a valid name with no spaces and symbols, or press 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt2_WindowsHelpersOpt2_WinEnvOpt3 )
+ECHO.
+ECHO Setting %someName% = "%currentDir%" ...
+setx "%someName%" "%currentDir%"
+ECHO.
+IF %ERRORLEVEL%==0 ( ECHO Variable set successfully! ) ELSE ( ECHO ERROR: Failed to set the environment variable. Exit code: %ERRORLEVEL% )
+SET "someName=" & PAUSE & GOTO StartMenuOpt2_WindowsHelpersOpt2_WinEnv
 
 
 
@@ -967,8 +1118,12 @@ REM StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt2: Remove untracked file
 :StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt2
 CALL :Clear
 ECHO This will delete all untracked files and directories.
-SET /p confirm=Are you sure you want to remove untracked files and directories? y/n: 
-CALL :ValidateInput_Confirm "StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt2" "StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean"
+SET /p input=Are you sure you want to remove untracked files and directories? y/n: 
+
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean
+IF /i "%input%"=="n" ( ECHO. & ECHO Command cancelled. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean )
+IF /I NOT "%input%"=="y" ( ECHO. & ECHO That's not a valid option. Select either 'y' or 'n' & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt3 )
 
 ECHO Removing untracked files and directories... & ECHO.
 git clean -fd
@@ -979,8 +1134,12 @@ REM StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt3: Remove everything unt
 :StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt3
 CALL :Clear
 ECHO This will delete all untracked files and directories and also everything that is in .gitignore.
-SET /p confirm=Are you sure you want to remove EVERYTHING untracked? y/n : 
-CALL :ValidateInput_Confirm "StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt3" "StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean"
+
+SET /p input=Are you sure you want to remove EVERYTHING untracked? y/n: 
+IF /i "%input%"=="x" CALL :Goodbye
+IF /i "%input%"=="z" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean
+IF /i "%input%"=="n" ( ECHO. & ECHO Command cancelled. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean )
+IF /I NOT "%input%"=="y" ( ECHO. & ECHO That's not a valid option. Select either 'y' or 'n' & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt3 )
 
 ECHO Removing everything untracked...
 git clean -fdx
@@ -1033,12 +1192,8 @@ ECHO.
 SET /p input=Enter your choice (1, z, x): 
 IF /i "%input%"=="x" CALL :Goodbye
 IF /i "%input%"=="z" GOTO StartMenu
-CALL :ValidateNumber 1 2
-IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '2', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenu )
-
-
-
-CALL :ValidateInput_Choice 1 1 "StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos" "StartMenuOpt3_GitMenuOpt2_GitSingleRepo_RepoSelected"
+CALL :ValidateNumber 1 1
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select number '1', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos )
 IF "%input%"=="1" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_CombosOpt1
 GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos
 
@@ -1058,15 +1213,9 @@ ECHO  5) Prune branches.                    'git fetch --prune'
 ECHO.
 SET /p input=Are you sure you want to proceed? y/n : 
 IF /i "%input%"=="x" CALL :Goodbye
-IF /i "%input%"=="z" GOTO StartMenu
-CALL :ValidateNumber 1 2
-IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '2', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenu )
-
-
-
-
-
-CALL :ValidateInput_Confirm "StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_CombosOpt1" "StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos"
+IF /i "%input%"=="z" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos
+IF /i "%input%"=="n" ( ECHO. & ECHO Command cancelled. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos )
+IF /I NOT "%input%"=="y" ( ECHO. & ECHO That's not a valid option. Select either 'y' or 'n' & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_CombosOpt1 )
 ECHO. & ECHO Running full git reset sequence... & ECHO.
 
 REM 1. Restore tracked files
@@ -1319,6 +1468,38 @@ IF "!input!"==".." ( ENDLOCAL & EXIT /B )
 REM Forbidden characters: \ : * ? " < > |
 REM Check forbidden characters - double-quote already removed
 ECHO(!input!| FINDSTR /R "[\\:*?<>|]" >NUL
+IF !ERRORLEVEL! EQU 0  ( ENDLOCAL & EXIT /B )
+REM Names cannot end with a space or a dot
+IF "!input:~-1!"==" " ( ENDLOCAL & EXIT /B )
+IF "!input:~-1!"=="." ( ENDLOCAL & EXIT /B )
+REM Valid string, pass it back
+ENDLOCAL & ( SET "%~1=%input%" & SET "result=1" )
+EXIT /B
+
+
+:ValidateString_NoSpacesOrSymbols
+REM Summary..: Validates if a string has forbiden symbols or spaces. Double-quotes are just removed.
+REM Param %1.: variable name (e.g., someName ) <-- pass the variable name, not its value
+REM Returns..:
+REM   %result% = 0 → invalid (empty or has forbidden chars)
+REM   %result% = 1 → valid
+REM Usage.....: CALL :ValidateString_NoSpacesOrSymbols "someName"
+
+SET "result=0"
+SETLOCAL ENABLEDELAYEDEXPANSION
+REM Get actual value
+SET "input=!%~1!"
+SET "input=!input:"=!"
+REM Detect spaces by removing them and comparing 
+SET "inputNoSpaces=!input: =!"
+IF NOT "!inputNoSpaces!"=="!input!" ( ECHO. & ECHO Spaces not allowed. Please try again. & ENDLOCAL & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt1 )
+REM Empty or reserved dots validation
+IF "!input!"=="" ( ENDLOCAL & EXIT /B )
+IF "!input!"=="."  ( ENDLOCAL & EXIT /B )
+IF "!input!"==".." ( ENDLOCAL & EXIT /B )
+REM Forbidden characters: \ : * ? " < > |
+REM Check forbidden characters - double-quote already removed
+ECHO(!input!| FINDSTR /R "[\\/:*?<>|]" >NUL
 IF !ERRORLEVEL! EQU 0  ( ENDLOCAL & EXIT /B )
 REM Names cannot end with a space or a dot
 IF "!input:~-1!"==" " ( ENDLOCAL & EXIT /B )
