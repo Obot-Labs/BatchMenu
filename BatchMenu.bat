@@ -1,48 +1,64 @@
 @ECHO off
 
 
-REM  Menu Map
-REM
-REM  StartMenu ==
-REM  StartMenuOpt0_Settings ==
-REM  StartMenuOpt0_SettingsOpt1_WorkDir ==
-REM  StartMenuOpt0_SettingsOpt1_WorkDirOpt1 --
-REM  StartMenuOpt0_SettingsOpt1_WorkDirOpt2 --
-REM  StartMenuOpt0_SettingsOpt1_WorkDirOpt3 --
-REM  StartMenuOpt0_SettingsOpt1_WorkDirOpt4 --
-REM  StartMenuOpt1_FoldersFilesManage ==
-REM  StartMenuOpt1_FoldersFilesManageOpt1_Delete ==
-REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt1 --
-REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt2 --
-REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt3 --
-REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt4 --
-REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt5 --
-REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt6 --
-REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt7 --
-REM  StartMenuOpt1_FoldersFilesManageOpt2_Backup ==
-REM  StartMenuOpt1_FoldersFilesManageOpt2_BackupOpt1 --
-REM  StartMenuOpt1_FoldersFilesManageOpt2_BackupOpt2 --
-REM  StartMenuOpt2_WindowsHelpers ==
-REM  StartMenuOpt2_WindowsHelpersOpt1_Firewall ==
-REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt1 --
-REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt2 --
-REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt3 --
-REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt4 --
-REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt5 --
-REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt6 --
-REM  StartMenuOpt2_WindowsHelpersOpt2_WinEnv ==
-REM  StartMenuOpt3_GitMenu ==
-REM  StartMenuOpt3_GitMenuOpt1_GitSettings ==
-REM  StartMenuOpt3_GitMenuOpt1_GitSettingsOpt1 --
-REM  StartMenuOpt3_GitMenuOpt1_GitSettingsOpt2 --
-REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepo ==
-REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepo_PleaseRunOutsideRepo --
-REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepo_RepoSelected ==
-REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt1_Clean --
-REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Combos --
-REM  StartMenuOpt3_GitMenuOpt3_GitMultiRepo ==
-REM  StartMenuOpt4_Placeholder ==
-REM
+REM  Labels Map
+
+REM  StartMenu
+REM  StartMenuOpt0_Settings
+REM  StartMenuOpt0_SettingsOpt1_WorkDir
+REM  StartMenuOpt0_SettingsOpt1_WorkDirOpt1
+REM  StartMenuOpt0_SettingsOpt1_WorkDirOpt2
+REM  StartMenuOpt0_SettingsOpt1_WorkDirOpt3
+REM  StartMenuOpt0_SettingsOpt1_WorkDirOpt4
+REM  StartMenuOpt0_SettingsOpt1_WorkDirOpt5
+REM  StartMenuOpt1_FoldersFilesManage
+REM  StartMenuOpt1_FoldersFilesManageOpt1_Delete
+REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt1
+REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt2
+REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt3
+REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt4
+REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt5
+REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt6
+REM  StartMenuOpt1_FoldersFilesManageOpt1_DeleteOpt7
+REM  StartMenuOpt1_FoldersFilesManageOpt2_Backup
+REM  StartMenuOpt1_FoldersFilesManageOpt2_BackupOpt1
+REM  StartMenuOpt1_FoldersFilesManageOpt2_BackupOpt2
+REM  StartMenuOpt2_WindowsHelpers
+REM  StartMenuOpt2_WindowsHelpersOpt1_Firewall
+REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt1
+REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt2
+REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt3
+REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt4
+REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt5
+REM  StartMenuOpt2_WindowsHelpersOpt1_FirewallOpt6
+REM  StartMenuOpt2_WindowsHelpersOpt2_WinEnv
+REM  StartMenuOpt2_WindowsHelpersOpt2_WinEnvOpt1
+REM  StartMenuOpt2_WindowsHelpersOpt2_WinEnvOpt2
+REM  StartMenuOpt2_WindowsHelpersOpt2_WinEnvOpt3
+REM  StartMenuOpt3_GitMenu
+REM  StartMenuOpt3_GitMenuOpt1_GitSettings
+REM  StartMenuOpt3_GitMenuOpt1_GitSettingsOpt1
+REM  StartMenuOpt3_GitMenuOpt1_GitSettingsOpt2
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepo
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepo_PleaseRunOutsideRepo
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepo_RepoSelected
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt1
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt2
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt3
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt4
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt5
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_CleanOpt6
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos
+REM  StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_CombosOpt1
+REM  StartMenuOpt3_GitMenuOpt3_GitMultiRepo
+REM  StartMenuOpt3_GitMenuOpt3_GitMultiRepoOpt1
+REM  StartMenuOpt4_Placeholder
+REM  StartMenuOpt4_PlaceholderOpt1
+REM  StartMenuOpt4_PlaceholderOpt2
+REM  StartMenuOpt4_PlaceholderOpt3
+
+
 
 
 REM  Subroutines
@@ -88,7 +104,7 @@ IF %errorlevel%==0 ( SET "isAdmin=1" )
 
 REM User input
 SET "input="
-REM Some subroutines boolean result: 0 false 1 true
+REM Some subroutines boolean result: 0 nok 1 ok
 SET "result=0"
 
 REM ============== GIT vars ================
@@ -111,6 +127,15 @@ REM Check if npm tool is available and get version
 SET "isNpmAvailable=0"
 SET "npmVersion="
 FOR /F "tokens=1" %%N IN ('npm --version 2^>nul') DO ( SET "npmVersion=%%N" & SET "isNpmAvailable=1" )
+
+REM ============== dotnet vars ================
+REM Check if .NET SDK (dotnet CLI) is available and get version
+SET "isDotnetAvailable=0"
+SET "dotnetVersion="
+FOR /F "tokens=1" %%D IN ('dotnet --version 2^>nul') DO (
+    SET "dotnetVersion=%%D"
+    SET "isDotnetAvailable=1"
+)
 
 
 
@@ -177,6 +202,11 @@ IF "%isGitAvailable%"=="1" (
     ECHO     Git: Version %gitVersion%.
 ) ELSE (
     ECHO     Git: Not available. 
+)
+IF "%isDotnetAvailable%"=="1" (
+    ECHO  dotNet: Version %dotnetVersion%.
+) ELSE (
+    ECHO  dotNet: Not available. 
 )
 IF "%isNugetAvailable%"=="1" (
     ECHO   Nuget: Version %nugetVersion%.
@@ -910,23 +940,44 @@ ECHO  Current directory: %currentDir%
 ECHO.
 ECHO  Please select an option:
 ECHO.
-ECHO   1. Change default repo (currently: '%defaultGitRepo%')
-ECHO   2. Reset default repo to 'develop'
+ECHO   -- Default repo --------
+ECHO    1. Change (currently: '%defaultGitRepo%')
+ECHO    2. Reset to 'develop'
+ECHO.
+ECHO   -- Config --------------
+ECHO    3. List config
+ECHO    4. Set entry
+ECHO    5. Unset entry
+ECHO.
+ECHO   -- Global Config -------
+ECHO    6. List config
+ECHO    7. Set entry
+ECHO    8. Unset entry
+ECHO    9. Set user.name
+ECHO   10. Set user.email
 ECHO.
 ECHO   z. Back
 ECHO   x. Exit
 ECHO.
-SET /p input=Enter your choice (1-2, z, x): 
+SET /p input=Enter your choice (1-10, z, x): 
 IF /i "%input%"=="x" CALL :Goodbye
 IF /i "%input%"=="z" GOTO StartMenuOpt3_GitMenu
-CALL :ValidateNumber 1 2
-IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '2', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettings )
+CALL :ValidateNumber 1 10
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '10', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettings )
 IF "%input%"=="1" GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt1
 IF "%input%"=="2" GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt2
+IF "%input%"=="3" GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt3
+IF "%input%"=="4" GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt4
+IF "%input%"=="5" GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt5
+IF "%input%"=="6" GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt6
+IF "%input%"=="7" GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt7
+IF "%input%"=="8" GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt8
+IF "%input%"=="9" GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt9
+IF "%input%"=="10" GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt10
 GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
 
 
-REM StartMenuOpt3_GitMenuOpt1_GitSettingsOpt1: Change default repo -----------------------------------------
+REM StartMenuOpt3_GitMenuOpt1_GitSettingsOpt1: Change default repo --------------------------------------------------------
 :StartMenuOpt3_GitMenuOpt1_GitSettingsOpt1
 CALL :Clear
 SETLOCAL ENABLEDELAYEDEXPANSION
@@ -941,13 +992,80 @@ ENDLOCAL & SET "defaultGitRepo=%tempGitRepo%"
 ECHO. & ECHO Default repository changed to: "%defaultGitRepo%" & PAUSE
 GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
 
-
-REM StartMenuOpt3_GitMenuOpt1_GitSettingsOpt2: Reset default repo to 'develop' -----------------------------
+REM StartMenuOpt3_GitMenuOpt1_GitSettingsOpt2: Reset default repo to 'develop' --------------------------------------------
 :StartMenuOpt3_GitMenuOpt1_GitSettingsOpt2
 SET "defaultGitRepo=develop" & ECHO. & ECHO Default repo changed back to 'develop' & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
 
+REM StartMenuOpt3_GitMenuOpt1_GitSettingsOpt3: List config ----------------------------------------------------------------
+:StartMenuOpt3_GitMenuOpt1_GitSettingsOpt3
+CALL :Clear
+ECHO Listing git config... & ECHO.
+git config --list
+ECHO. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
+
+REM StartMenuOpt3_GitMenuOpt1_GitSettingsOpt4: Set config entry -----------------------------------------------------------
+:StartMenuOpt3_GitMenuOpt1_GitSettingsOpt4
+CALL :Clear
+SET /P "entry=Enter git config entry name: "
+REM Validate: must contain a dot
+IF "%entry%"=="%entry:.=%" ( ECHO. & ECHO ERROR: Invalid entry. It must be in the form section.key & SET "entry=" & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt4 )
+SET /P "value=Enter git config value: "
+git config "%entry%" "%value%"
+ECHO. & IF %ERRORLEVEL%==0 ( ECHO Command succeeded! ) ELSE ( ECHO ERROR: Command failed with exit code %ERRORLEVEL%. )
+SET "entry=" & SET "value="
+ECHO. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
+
+REM StartMenuOpt3_GitMenuOpt1_GitSettingsOpt5: Unset config entry --------------------------------------------------------
+:StartMenuOpt3_GitMenuOpt1_GitSettingsOpt5
+CALL :Clear
+SET /P "input=Enter git config entry to unset: "
+git config --unset %input%
+ECHO. & IF %ERRORLEVEL%==0 ( ECHO Command succeeded! ) ELSE ( ECHO ERROR: Command failed with exit code %ERRORLEVEL%. )
+ECHO. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
 
 
+REM StartMenuOpt3_GitMenuOpt1_GitSettingsOpt6: List global config ---------------------------------------------------------
+:StartMenuOpt3_GitMenuOpt1_GitSettingsOpt6
+CALL :Clear
+ECHO Listing git global config... & ECHO.
+git config --global --list
+ECHO. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
+
+REM StartMenuOpt3_GitMenuOpt1_GitSettingsOpt7: Set config global entry ----------------------------------------------------
+:StartMenuOpt3_GitMenuOpt1_GitSettingsOpt7
+CALL :Clear
+SET /P "entry=Enter git config global entry name: "
+IF "%entry%"=="%entry:.=%" ( ECHO. & ECHO ERROR: Invalid entry. It must be in the form section.key & SET "entry=" & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettingsOpt7 )
+SET /P "value=Enter git config global value: "
+git config --global "%entry%" "%value%"
+ECHO. & IF %ERRORLEVEL%==0 ( ECHO Command succeeded! ) ELSE ( ECHO ERROR: Command failed with exit code %ERRORLEVEL%. )
+SET "entry=" & SET "value="
+ECHO. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
+
+REM StartMenuOpt3_GitMenuOpt1_GitSettingsOpt8: Unset config global entry -------------------------------------------------
+:StartMenuOpt3_GitMenuOpt1_GitSettingsOpt8
+CALL :Clear
+SET /P "input=Enter git config global entry to unset: "
+git config --global --unset %input%
+ECHO. & IF %ERRORLEVEL%==0 ( ECHO Command succeeded! ) ELSE ( ECHO ERROR: Command failed with exit code %ERRORLEVEL%. )
+ECHO. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
+
+
+REM StartMenuOpt3_GitMenuOpt1_GitSettingsOpt9: Set user.name --------------------------------------------------------------
+:StartMenuOpt3_GitMenuOpt1_GitSettingsOpt9
+CALL :Clear
+SET /P "input=Enter new user.name value: "
+git config --global user.name %input%
+ECHO. & IF %ERRORLEVEL%==0 ( ECHO Command succeeded! ) ELSE ( ECHO ERROR: Command failed with exit code %ERRORLEVEL%. )
+ECHO. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
+
+REM StartMenuOpt3_GitMenuOpt1_GitSettingsOpt10: Set user.name --------------------------------------------------------------
+:StartMenuOpt3_GitMenuOpt1_GitSettingsOpt10
+CALL :Clear
+SET /P "input=Enter new user.email value: "
+git config --global user.email %input%
+ECHO. & IF %ERRORLEVEL%==0 ( ECHO Command succeeded! ) ELSE ( ECHO ERROR: Command failed with exit code %ERRORLEVEL%. )
+ECHO. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
 
 
 
@@ -964,17 +1082,18 @@ SETLOCAL ENABLEDELAYEDEXPANSION
 ECHO ===========================================================================================
 ECHO                                         Git
 ECHO ===========================================================================================
-ECHO.
+ECHO  Selecting one of the following repos will change bat work dir.
 ECHO  Current directory:  %currentDir%
+ECHO. 
 
 REM If not running in a git repo, search for repositories in subfolders recursively
-ECHO Scanning for Git repositories...
+ECHO  Scanning for Git repositories...
 SET gitRepoCount=0
 FOR /r "%currentDir%" %%d IN (.) DO ( IF EXIST "%%d\.git" ( SET /a gitRepoCount+=1 & SET "repo!gitRepoCount!=%%~fd" ) )
 REM If no repositories are found
-IF %gitRepoCount%==0 ( ECHO. & ECHO No Git repositories found in this folder or its subfolders. & ECHO. & ENDLOCAL & PAUSE & GOTO StartMenuOpt3_GitMenu )
+IF %gitRepoCount%==0 ( ECHO. & ECHO  No Git repositories found in this folder or its subfolders. & ECHO. & ENDLOCAL & PAUSE & GOTO StartMenuOpt3_GitMenu )
 REM Git repositories menu
-ECHO Found %gitRepoCount% repositories:
+ECHO  Found %gitRepoCount% repositories:
 ECHO. 
 FOR /l %%i IN (1,1,%gitRepoCount%) DO ( ECHO   %%i. !repo%%i! )
 ECHO. 
@@ -1051,9 +1170,8 @@ ECHO  Repo: %currentDir%
 ECHO.
 ECHO  Please select an option:
 ECHO.
-ECHO   1. Settings
-ECHO   2. Clean and Reset commands
-ECHO   3. Combos
+ECHO   1. Clean and Reset commands
+ECHO   2. Combos
 ECHO.
 ECHO   z. Back
 ECHO   x. Exit
@@ -1061,11 +1179,10 @@ ECHO.
 SET /p input=Enter your choice (1-3, z, x): 
 IF /i "%input%"=="x" CALL :Goodbye
 IF /i "%input%"=="z" GOTO StartMenu
-CALL :ValidateNumber 1 3
-IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '3', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepo_RepoSelected )
-IF "%input%"=="1" GOTO StartMenuOpt3_GitMenuOpt1_GitSettings
-IF "%input%"=="2" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean
-IF "%input%"=="3" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos
+CALL :ValidateNumber 1 2
+IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '2', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepo_RepoSelected )
+IF "%input%"=="1" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt2_Clean
+IF "%input%"=="2" GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepoOpt3_Combos
 GOTO StartMenuOpt3_GitMenuOpt2_GitSingleRepo_RepoSelected
 
 
@@ -1256,12 +1373,12 @@ CALL :Clear
 ECHO ===========================================================================================
 ECHO                                         Git 
 ECHO ===========================================================================================
-ECHO  Git version: %gitVersion%.
-ECHO  Repo: %currentDir%
+ECHO  Perform Git commands on all subfolder repositories.
+ECHO  Current directory: %currentDir%
 ECHO.
 ECHO  Please select an option:
 ECHO.
-ECHO   1. Comming soon
+ECHO   1. Fetch prune all repos  
 ECHO   2. Comming soon
 ECHO.
 ECHO   z. Back
@@ -1272,12 +1389,45 @@ IF /i "%input%"=="x" CALL :Goodbye
 IF /i "%input%"=="z" GOTO StartMenuOpt3_GitMenu
 CALL :ValidateNumber 1 2
 IF "%result%"=="0" ( ECHO. & ECHO That's not a valid option. Select a number between '1' and '2', 'z' to go back or 'x' to quit. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt3_GitMultiRepo )
-IF "%input%"=="1" GOTO StartMenuOpt3_GitMenuOpt3_GitMultiRepo
+IF "%input%"=="1" GOTO StartMenuOpt3_GitMenuOpt3_GitMultiRepoOpt1
 IF "%input%"=="2" GOTO StartMenuOpt3_GitMenuOpt3_GitMultiRepo
 GOTO StartMenuOpt3_GitMenuOpt3_GitMultiRepo
 
 
+REM StartMenuOpt3_GitMenuOpt3_GitMultiRepoOpt1 - Fetch prune all repos =========================
+:StartMenuOpt3_GitMenuOpt3_GitMultiRepoOpt1
+CALL :Clear
+ECHO  Current directory: %currentDir%
+ECHO.
+ECHO  Scanning for Git repositories...
+ECHO.
+SETLOCAL ENABLEDELAYEDEXPANSION
+SET "repoCount=0"
 
+REM --- Find all subfolder repos safely ---
+FOR /F "delims=" %%d IN ('DIR /B /S /AD "%currentDir%"') DO ( IF EXIST "%%d\.git" ( SET /A repoCount+=1 & SET "repo!repoCount!=%%d" ) )
+
+IF !repoCount!==0 ( ENDLOCAL & ECHO  No Git repositories found under this directory. & ECHO. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt3_GitMultiRepo )
+ECHO  Found !repoCount! repositories. & ECHO  Running: 'git fetch --prune' for each one. & ECHO.
+
+REM --- Process each repo ---
+SET "successCount=0" & SET "failCount=0"
+
+FOR /L %%i IN (1,1,!repoCount!) DO (
+    SET "repoDir=!repo%%i!"
+    ECHO   Repo %%i: !repoDir!
+    PUSHD "!repoDir!" >NUL 2>&1
+    IF ERRORLEVEL 1 ( ECHO   ERROR: Could not enter directory. & SET /A failCount+=1 & ECHO. & CONTINUE )
+    git fetch --prune
+    IF ERRORLEVEL 1 ( ECHO   FAILED & SET /A failCount+=1 ) ELSE ( ECHO   SUCCESS & SET /A successCount+=1 )
+    POPD >NUL
+    ECHO.
+)
+
+ECHO ===============================================================================
+ECHO   Completed: !successCount! succeeded, !failCount! failed.
+ECHO ===============================================================================
+ENDLOCAL & ECHO. & PAUSE & GOTO StartMenuOpt3_GitMenuOpt3_GitMultiRepo
 
 
 
